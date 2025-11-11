@@ -25,7 +25,7 @@ Vamos a entrenar tu cerebro para dar órdenes en la secuencia exacta.
 ¡Pero espera! No puede subir sin su tarjeta SUBE (💳).
 1. Ve a buscar la tarjeta.
 2. Agárrala.
-3. Ve a la parada de colectivo.
+3. Ve a la parada de colectivo 🚌.
       `,
       scenarioId: 'robot-bus'
     },
@@ -35,7 +35,7 @@ Vamos a entrenar tu cerebro para dar órdenes en la secuencia exacta.
       content: `
 **Misión:** Baño completo.
 En la vida real, no te secas antes de mojarte. MiniBot tampoco.
-Debes pasar por las zonas en este orden estricto:
+Debes pasar por las zonas en este orden estricto para que cuente como un baño válido:
 1. Jabón 🧼
 2. Agua 🚿
 3. Secado 💨
@@ -46,9 +46,9 @@ Debes pasar por las zonas en este orden estricto:
       type: 'logic-simulation-2d',
       title: "Ejercicio 3: Estacionar",
       content: `
-**Misión:** Estacionar sin chocar.
-El lugar es muy estrecho. Si entras de frente, quizás choques.
-Prueba maniobrar: avanza, gira, y entra marcha atrás (o como mejor te salga, ¡pero sin rayar la pintura!).
+**Misión:** Estacionar en la zona 🅿️.
+El lugar entre las paredes 🧱 es muy estrecho. Si intentas entrar directo, probablemente chocarás.
+Vas a tener que pensar una secuencia de maniobras (¿quizás avanzar un poco, girar, y luego entrar?) para lograrlo sin rasguños.
       `,
       scenarioId: 'robot-parking'
     },
@@ -57,7 +57,7 @@ Prueba maniobrar: avanza, gira, y entra marcha atrás (o como mejor te salga, ¡
       title: "Misión Final: Operación Café",
       content: `
 ¡Graduación de Lógica!
-Llévale la taza a la mesa. Sé preciso con la distancia y la fuerza de la pinza.
+Llévale la taza ☕ a la mesa (zona verde). Sé preciso con la distancia y la fuerza de la pinza.
       `,
       scenarioId: 'coffee-run'
     },

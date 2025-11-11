@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { lessons } from '../data/lessons';
@@ -9,6 +8,7 @@ import CodePlayground from '../components/CodePlayground';
 import LogicSimulator from '../components/LogicSimulator';
 import RobotSimulator2D from '../components/RobotSimulator2D';
 import { ChevronLeft, ChevronRight, CheckCircle, Home } from 'lucide-react';
+import { ExecutionResult } from '../types';
 
 const LessonWizard = () => {
   const { id } = useParams<{ id: string }>();
@@ -39,15 +39,27 @@ const LessonWizard = () => {
     }
   };
 
-  const checkExercise = (output: string[]) => {
+  const checkExercise = (result: ExecutionResult) => {
       if (!currentStep.exercise) return;
       if (currentStep.exercise.expectedOutput === "DONE") return;
 
+      // Special case: The exercise specifically WANTS an error to happen (e.g. Lesson 1, breaking syntax)
+      if (currentStep.exercise.expectedOutput === '$$ERROR$$') {
+          if (result.error) {
+              setExerciseCompleted(true);
+          }
+          return;
+      }
+
+      // Normal case: we want success and maybe specific output
+      if (result.error) return; // If we didn't expect an error but got one, it's not complete.
+
       let isSuccess = false;
       if (currentStep.exercise.expectedOutput) {
-           isSuccess = output.some(line => line.trim() === currentStep.exercise?.expectedOutput);
+           isSuccess = result.output.some(line => line.trim() === currentStep.exercise?.expectedOutput);
       } else {
-          isSuccess = output.length > 0;
+          // Default: just running it successfully and getting ANY output is enough
+          isSuccess = result.output.length > 0;
       }
 
       if (isSuccess) {
@@ -133,7 +145,7 @@ const LessonWizard = () => {
                      </div>
                     <CodePlayground 
                         initialCode={currentStep.exercise.initialCode || ''} 
-                        onOutputChange={checkExercise}
+                        onRunComplete={checkExercise}
                     />
                 </div>
             )}

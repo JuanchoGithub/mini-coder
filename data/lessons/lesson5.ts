@@ -8,30 +8,42 @@ export const lesson5: Lesson = {
   steps: [
     {
       type: 'theory',
-      title: "Tipos de datos",
+      title: "Las Cajas con Etiqueta",
       content: `
-Las variables son "cajas" con etiqueta. En MiniQB, la etiqueta nos dice qué podemos guardar dentro:
+Imagina que la memoria de la computadora es un almacén gigante lleno de cajas vacías.
+Para usar una caja, le pones una etiqueta (un nombre) y guardas algo dentro.
 
-*   **String ($):** Para texto. Ej: \`nombre$ = "Ana"\`
-*   **Numérico (sin símbolo):** Para números. Ej: \`puntos = 100\`
+\`puntos = 100\`
+Aquí, buscamos una caja, le pegamos la etiqueta "puntos" y guardamos el número 100 dentro.
+      `
+    },
+    {
+      type: 'theory',
+      title: "¿Texto o Números?",
+      content: `
+Las computadoras son ordenadas. No les gusta mezclar peras con manzanas.
+En nuestro lenguaje MiniQB, usamos un truco para diferenciarlas:
+
+*   **Cajas para Texto:** Su etiqueta termina con el signo **$** (Piensa en la 'S' de String/Texto). Ej: \`nombre$ = "Ana"\`
+*   **Cajas para Números:** Su etiqueta NO tiene signo especial. Ej: \`edad = 12\`
       `
     },
     {
       type: 'code',
-      title: "Reasignación",
+      title: "Reasignación (Cambiar el contenido)",
       content: `
-Las variables pueden cambiar de valor (por eso se llaman "variables").
-El valor antiguo se pierde para siempre cuando guardas uno nuevo.
+¿Por qué se llaman "variables"? ¡Porque su valor puede variar!
+Puedes sacar lo que había en una caja y meter algo nuevo. Lo viejo se pierde para siempre.
       `,
       exercise: {
-        prompt: "¿Qué mostrará este código al final? Ejecútalo para verlo.",
+        prompt: "¿Qué número mostrará al final? Sigue el código con tu dedo antes de ejecutar.",
         initialCode: `puntos = 100
-PRINT puntos
+PRINT "Empiezas con: " + puntos
 puntos = 200
-PRINT puntos
+PRINT "Ahora tienes: " + puntos
 puntos = puntos + 50
-PRINT puntos`,
-        expectedOutput: "250"
+PRINT "¡Bono! Total final: " + puntos`,
+        expectedOutput: "¡Bono! Total final: 250"
       }
     }
   ]

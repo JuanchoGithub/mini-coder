@@ -7,10 +7,10 @@ import { ExecutionResult } from '../types';
 
 interface CodePlaygroundProps {
   initialCode: string;
-  onOutputChange?: (output: string[]) => void;
+  onRunComplete?: (result: ExecutionResult) => void;
 }
 
-const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onOutputChange }) => {
+const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunComplete }) => {
   const [code, setCode] = useState(initialCode);
   const [output, setOutput] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -35,13 +35,15 @@ const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onOutputCh
     if (result.error) {
       setError(result.error);
       setIsWaitingForInput(false);
+      // Notify parent even on error, so we can have exercises that require causing errors
+      if (onRunComplete) onRunComplete(result);
     } else {
       // Keep previous output if we were just waiting for input, otherwise set new
       setOutput(result.output);
       setIsWaitingForInput(!!result.isWaitingForInput);
       
-      if (onOutputChange && !result.isWaitingForInput && !result.error) {
-          onOutputChange(result.output);
+      if (onRunComplete && !result.isWaitingForInput) {
+          onRunComplete(result);
       }
     }
   };

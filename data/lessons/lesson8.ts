@@ -3,42 +3,61 @@ import { Lesson } from '../../types';
 
 export const lesson8: Lesson = {
   id: 8,
-  title: "Proyecto Final: Aventura",
-  description: "Tu propio juego de texto.",
+  title: "Bucles II: Repetir hasta que...",
+  description: "Cuando NO sabes cuántas veces tendrás que repetir algo.",
   steps: [
     {
       type: 'theory',
-      title: "El plan",
+      title: "¿Y si no sé cuándo parar?",
       content: `
-Vamos a usar todo lo aprendido para hacer un mini-juego.
-Necesitaremos:
-1. Un bucle \`DO WHILE\` para que el juego siga hasta terminar.
-2. \`PRINT\` e \`INPUT\` para narrar y preguntar qué hacer.
-3. \`IF\` para ver si ganaste o perdiste.
+El bucle \`FOR\` es genial si sabes que quieres repetir algo 10 veces.
+¿Pero qué pasa si quieres repetir algo **mientras** el usuario no adivine una contraseña? Podría tardar 1 intento, o 1000.
+
+Ahí entra el **DO WHILE** (Hacer Mientras...).
+      `
+    },
+    {
+      type: 'theory',
+      title: "El portero obstinado",
+      content: `
+\`DO WHILE\` repite un bloque de código MIENTRAS una condición sea verdadera.
+
+\`\`\`basic
+clave$ = ""
+DO WHILE clave$ <> "secreto"
+   INPUT "Dime la clave: ", clave$
+LOOP
+PRINT "¡Bienvenido!"
+\`\`\`
+El programa se queda "atrapado" en el bucle hasta que la condición (\`clave$ <> "secreto"\`) deja de ser cierta.
       `
     },
     {
       type: 'code',
-      title: "El Laberinto",
-      content: "Intenta escapar del laberinto. Solo hay una salida correcta.",
+      title: "El adivino persistente",
+      content: `
+Vamos a hacer un juego donde tienes que adivinar un número. El programa no terminará hasta que aciertes.
+Observa cómo usamos una variable \`adivinado\` que empieza en 0 (Falso) y cambia a 1 (Verdadero) solo cuando aciertas.
+      `,
       exercise: {
-        prompt: "Encuentra la salida (es el ESTE).",
-        initialCode: `jugando = 1
-PRINT "Estás perdido en un laberinto oscuro."
+        prompt: "Ejecuta el juego e intenta adivinar el número secreto (es el 5).",
+        initialCode: `secreto = 5
+adivinado = 0
 
-DO WHILE jugando = 1
-    INPUT "¿Vas al NORTE, SUR, ESTE u OESTE? ", direccion$
-    
-    IF direccion$ = "ESTE" THEN
-        PRINT "¡Ves luz! Has encontrado la salida. GANASTE."
-        jugando = 0
-    ELSEIF direccion$ = "NORTE" THEN
-        PRINT "Chocas contra una pared fría."
+PRINT "Estoy pensando en un número del 1 al 10..."
+
+DO WHILE adivinado = 0
+    INPUT "¿Cuál es? ", intento
+    IF intento = secreto THEN
+        PRINT "¡EXACTO! ¡Lo adivinaste!"
+        adivinado = 1
     ELSE
-        PRINT "Te adentras más en la oscuridad... mejor vuelve."
+        PRINT "Nop. Intenta de nuevo."
     END IF
-LOOP`,
-         solutionCues: ['DO WHILE', 'IF', 'ESTE']
+LOOP
+
+PRINT "Fin del juego."`,
+        solutionCues: ['DO WHILE', 'LOOP', '= 1']
       }
     }
   ]

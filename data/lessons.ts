@@ -8,6 +8,7 @@ import { lesson5 } from './lessons/lesson5';
 import { lesson6 } from './lessons/lesson6';
 import { lesson7 } from './lessons/lesson7';
 import { lesson8 } from './lessons/lesson8';
+import { lesson9 } from './lessons/lesson9';
 
 export const lessons: Lesson[] = [
   lesson1,
@@ -17,5 +18,6 @@ export const lessons: Lesson[] = [
   lesson5,
   lesson6,
   lesson7,
-  lesson8
+  lesson8,
+  lesson9
 ];
