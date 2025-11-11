@@ -36,6 +36,69 @@
       ::-webkit-scrollbar-thumb:hover {
         background: #94a3b8;
       }
+
+      /* New styles for custom lightweight code editor */
+      .code-editor-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        font-family: monospace;
+        font-size: 16px;
+        line-height: 1.5;
+        background-color: #f0f0f0;
+        overflow: hidden; /* Important */
+        border-radius: 0.75rem;
+        border: 1px solid #d1d5db;
+        transition: border-color 0.2s;
+      }
+      .code-editor-container:focus-within {
+        border-color: #4f46e5;
+      }
+
+      .code-editor-container textarea,
+      .code-editor-container pre {
+        /* CRITICAL: These properties must match exactly for cursor alignment */
+        margin: 0;
+        padding: 10px;
+        border: 0;
+        font: inherit;
+        line-height: inherit;
+        letter-spacing: inherit;
+        white-space: pre-wrap;
+        word-break: break-word;
+        /* End of critical properties */
+
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        overflow: auto;
+      }
+
+      .code-editor-container textarea {
+        z-index: 1;
+        resize: none;
+        background: transparent;
+        color: transparent;
+        caret-color: #1e293b;
+        outline: none;
+      }
+
+      .code-editor-container pre {
+        z-index: 0;
+        pointer-events: none;
+        color: #1e293b;
+      }
+
+      /* Syntax Highlighting Tokens */
+      .token-keyword { color: #4338ca; font-weight: bold; }
+      .token-comment { color: #16a34a; font-style: italic; }
+      .token-string { color: #0891b2; }
+      .token-number { color: #059669; }
+      .token-operator { color: #64748b; }
+      .token-variable { color: #475569; }
     </style>
   <script type="importmap">
 {
@@ -45,7 +108,10 @@
     "react/": "https://aistudiocdn.com/react@^19.2.0/",
     "react": "https://aistudiocdn.com/react@^19.2.0",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.5"
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.5",
+    "@codemirror/view": "https://aistudiocdn.com/@codemirror/view@^6.38.6",
+    "@codemirror/language": "https://aistudiocdn.com/@codemirror/language@^6.11.3",
+    "@lezer/highlight": "https://aistudiocdn.com/@lezer/highlight@^1.2.3"
   }
 }
 </script>

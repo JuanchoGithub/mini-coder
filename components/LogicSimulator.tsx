@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 // FIX: Import GameStateValue for type casting.
 import { LogicScenario, LogicAction, GameState, GameStateValue } from '../types';
@@ -104,8 +105,7 @@ const LogicSimulator: React.FC<LogicSimulatorProps> = ({ scenario, onComplete })
                 <div className="bg-slate-100 p-3 rounded-xl text-sm space-y-2 border border-slate-200 font-mono">
                     {Object.entries(scenario.stateDescriptions).map(([key, descFn]) => (
                         <div key={key} className={key === 'robot_loc' || key === 'robot_mano' ? 'font-bold text-blue-700' : 'text-slate-600'}>
-                            {/* FIX: Cast `descFn` to its correct function type to resolve a TypeScript type inference issue. */}
-                            {(descFn as (val: GameStateValue) => string)(simulationState[key])}
+                            {descFn(simulationState[key])}
                         </div>
                     ))}
                 </div>

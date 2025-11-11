@@ -50,7 +50,7 @@ PRINT (10 + 5) * 2 ' Resultado: 30 (paréntesis cambian orden)
 PRINT 100 / 2 / 5 ' Resultado: 10 (divide secuencial)
 
 ' Añade tus cálculos aquí debajo'`,
-          expectedOutput: "10\n10"
+          expectedOutput: "20\n30\n10\n10\n10"
       }
     },
     {
@@ -83,7 +83,7 @@ Usa PRINT para ver resultados booleanos. Predice antes de ejecutar.
 PRINT 5 > 10 ' 0
 
 ' Agrega aquí'`,
-          expectedOutput: "1\n1"
+          expectedOutput: "1\n0\n1\n1"
       }
     },
     {

@@ -107,7 +107,7 @@ Intenta predecir qué saldrá antes de ejecutar cada línea. Luego, experimenta 
 PRINT 20 >= 20 ' Esto dará 1 (Verdadero)
 
 ' Escribe tu código aquí para comprobar si 50 <> 50 y 50 <= 100`,
-          expectedOutput: "0\n1"
+          expectedOutput: "1\n1\n0\n1"
       }
     },
     {
@@ -139,12 +139,11 @@ Queremos saber si un número es "especial". Para ser especial debe ser mayor que
 Experimenta: Cambia 'numero' a valores como 5, 15, 25 y ve los resultados. ¿Qué pasa con bordes como 10 o 20?
       `,
       exercise: {
-          prompt: "Cambia el valor de la variable 'numero' a 25. Al ejecutar, el programa ahora debería imprimir que NO es especial (un 0). Luego, agrega una comprobación para un número par (usa MOD 2 = 0).",
+          prompt: "Cambia el valor de la variable 'numero' a 25. Al ejecutar, el programa ahora debería imprimir que NO es especial (un 0).",
           initialCode: `numero = 15
 es_especial = (numero > 10) AND (numero < 20)
 PRINT "¿Es especial? " + es_especial`,
-          expectedOutput: "¿Es especial? 0",
-          solutionCues: ['AND']
+          expectedOutput: "¿Es especial? 0"
       }
     },
     {
@@ -216,15 +215,14 @@ Es una lógica compleja, ¡pero las computadoras la resuelven en nanosegundos! E
 Modifica variables para probar escenarios: ¿Qué hace que suene? ¿Qué la silencia?
       `,
       exercise: {
-          prompt: "Modifica los valores de las variables (cámbialos entre 0 y 1) para crear una situación donde la alarma NO suene. El resultado debe ser 0. Agrega NOT a una condición para invertirla.",
+          prompt: "Modifica los valores de las variables (cámbialos entre 0 y 1) para crear una situación donde la alarma NO suene. El resultado debe ser 0.",
           initialCode: `es_noche = 1 ' 1=SI, 0=NO
 puerta_abierta = 0 ' 1=SI, 0=NO
 boton_panico = 1 ' 1=SI, 0=NO
 
 alarma = (es_noche AND puerta_abierta) OR boton_panico
 PRINT "¿Suena la alarma? " + alarma`,
-          expectedOutput: "¿Suena la alarma? 0",
-          solutionCues: ['AND', 'OR', 'NOT']
+          expectedOutput: "¿Suena la alarma? 0"
       }
     },
     {

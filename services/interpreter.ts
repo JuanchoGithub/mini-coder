@@ -1,5 +1,5 @@
 
-import { ExecutionResult } from '../types';
+import { ExecutionResult, OutputLine } from '../types';
 
 // MiniQB Interpreter Engine
 // A line-by-line interpreter inspired by Microsoft QuickBASIC 4.5
@@ -16,7 +16,7 @@ interface Block {
 
 interface InterpreterState {
   variables: Variables;
-  output: string[];
+  output: OutputLine[];
   waitingForInput: boolean;
   inputTargetVariable: string | null;
   currentLineIndex: number;
@@ -279,11 +279,11 @@ export const executeCode = (code: string, inputVal?: string): ExecutionResult =>
       if (upperLine.startsWith('PRINT ') || upperLine === 'PRINT') {
         const expr = rawLine.substring(5).trim();
         if (expr === '') {
-             currentState.output.push("");
+             currentState.output.push({ type: 'print', value: "" });
         } else {
              // Handle simple ";" or "," for formatting if we wanted (ignoring for basic V1)
              const val = evaluateExpression(expr, currentState.variables);
-             currentState.output.push(String(val));
+             currentState.output.push({ type: 'print', value: String(val) });
         }
 
       // --- INPUT ---
@@ -301,10 +301,10 @@ export const executeCode = (code: string, inputVal?: string): ExecutionResult =>
              const rest = rawLine.substring(lastQuote + 1).trim();
              // remove potential ; or , separators
              varName = rest.replace(/^[;,]\s*/, '').trim();
-             currentState.output.push(prompt); // Print prompt immediately
+             currentState.output.push({ type: 'prompt', value: prompt }); // Print prompt immediately
         } else {
              varName = rawLine.substring(6).trim();
-             currentState.output.push("? "); // Standard QB generic prompt
+             currentState.output.push({ type: 'prompt', value: "? " }); // Standard QB generic prompt
         }
 
         currentState.waitingForInput = true;

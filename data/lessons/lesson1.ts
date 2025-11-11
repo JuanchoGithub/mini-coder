@@ -166,8 +166,7 @@ Esto enseña "flujo de control": la computadora es como un lector que sigue la h
 PRINT "un programador novato..."
 PRINT "¡que se convirtió en experto!"
 ' Agrega tu línea de código aquí debajo`,
-          expectedOutput: "Y creó mundos nuevos.",
-          solutionCues: ['PRINT', 'PRINT', 'PRINT', 'PRINT']
+          expectedOutput: "Había una vez...\nun programador novato...\n¡que se convirtió en experto!\nY creó mundos nuevos."
       }
     },
     {

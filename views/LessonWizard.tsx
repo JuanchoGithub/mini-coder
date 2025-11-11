@@ -70,12 +70,16 @@ const LessonWizard = () => {
     // Case 3: Check for correct output
     let isSuccess = false;
     if (currentStep.exercise.expectedOutput) {
-        const actualOutput = result.output.join('\n').trim();
+        const actualOutput = result.output
+            .filter(line => line.type === 'print')
+            .map(line => line.value)
+            .join('\n')
+            .trim();
         const expectedOutput = currentStep.exercise.expectedOutput.trim();
         isSuccess = actualOutput === expectedOutput;
     } else {
         // If no output is specified, any output is considered a success
-        isSuccess = result.output.length > 0;
+        isSuccess = result.output.filter(line => line.type === 'print').length > 0;
     }
 
     if (isSuccess) {

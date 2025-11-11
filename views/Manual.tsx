@@ -1,4 +1,5 @@
 
+
 import React, { useState, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Home, BookOpen, Search, Hash } from 'lucide-react';
@@ -69,8 +70,7 @@ const Manual = () => {
                 <div key={category} className="mb-6">
                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">{category}</h3>
                     <ul className="space-y-1">
-                        {/* FIX: Cast `entries` to `ManualEntry[]` to resolve a TypeScript type inference issue with Object.entries. */}
-                        {(entries as ManualEntry[]).map(entry => (
+                        {entries.map(entry => (
                             <li key={entry.id}>
                                 <button
                                     onClick={() => setSearchParams({ topic: entry.id })}

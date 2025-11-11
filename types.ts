@@ -34,8 +34,10 @@ export interface Token {
   end: number;
 }
 
+export type OutputLine = { type: 'print' | 'prompt'; value: string };
+
 export interface ExecutionResult {
-  output: string[];
+  output: OutputLine[];
   error?: string;
   isWaitingForInput?: boolean;
   inputVariableName?: string;

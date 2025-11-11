@@ -78,11 +78,11 @@ Vamos a crear variables simples. Usa el comando LET para asignar (aunque en Mini
 Intenta predecir el output antes de ejecutar.
       `,
       exercise: {
-          prompt: "Crea una variable 'edad' con 25, y 'nombre$' con 'Juan'. Luego, PRINT ambas.",
-          initialCode: `LET edad = 25
-LET nombre$ = "Juan"
-PRINT edad
-PRINT nombre$`,
+          prompt: "Crea una variable 'edad' con 25, y 'nombre$' con 'Juan'. Luego, imprime ambas variables, una en cada línea.",
+          initialCode: `' Crea una variable llamada edad con el número 25
+' Crea una variable llamada nombre$ con el texto "Juan"
+
+' Imprime ambas variables, una en cada línea'`,
           expectedOutput: "25\nJuan"
       }
     },
@@ -124,7 +124,7 @@ Por ejemplo, puedes sumar dos números (\\\`5 + 5\\\`) y puedes "sumar" (concate
       `,
       exercise: {
           prompt: "Intenta multiplicar el texto 'hola' por 5. La computadora no sabrá qué hacer y te mostrará un error. El objetivo es ver este error.",
-          initialCode: `PRINT "hola" * 5 ' Esto fallará'`,
+          initialCode: `' Escribe aquí el código para intentar multiplicar "hola" por 5'`,
           expectedOutput: "$$ERROR$$"
       }
     },

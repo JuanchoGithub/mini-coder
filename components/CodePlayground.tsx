@@ -3,7 +3,7 @@ import CodeEditor from './CodeEditor';
 import SidebarHelp from './SidebarHelp';
 import { executeCode } from '../services/interpreter';
 import { Play, Terminal, RotateCcw, CornerDownLeft } from 'lucide-react';
-import { ExecutionResult } from '../types';
+import { ExecutionResult, OutputLine } from '../types';
 
 interface CodePlaygroundProps {
   initialCode: string;
@@ -12,7 +12,7 @@ interface CodePlaygroundProps {
 
 const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunComplete }) => {
   const [code, setCode] = useState(initialCode);
-  const [output, setOutput] = useState<string[]>([]);
+  const [output, setOutput] = useState<OutputLine[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [currentWord, setCurrentWord] = useState('');
   const [isWaitingForInput, setIsWaitingForInput] = useState(false);
@@ -100,7 +100,7 @@ const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunCompl
             </div>
             <div className="flex-1 space-y-1">
                 {output.map((line, i) => (
-                <div key={i} className="break-words animate-fadeIn">{'> ' + line}</div>
+                <div key={i} className="break-words animate-fadeIn">{'> ' + line.value}</div>
                 ))}
                 {error && (
                     <div className="text-red-400 font-bold mt-2 animate-pulse">Error: {error}</div>
