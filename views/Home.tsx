@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { lessons } from '../data/lessons';
-import { Rocket, Code2, BookOpen, Star } from 'lucide-react';
+import { Rocket, Code2, BookOpen, Star, Box } from 'lucide-react';
 
 const Home = () => {
   return (
@@ -22,11 +22,16 @@ const Home = () => {
             ¡Aprende a programar jugando! Un curso paso a paso diseñado para mentes curiosas.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <a href="#lessons" className="px-8 py-3 bg-accent text-amber-900 font-bold rounded-xl shadow-lg hover:shadow-xl hover:bg-amber-400 transition-all transform hover:-translate-y-1">
-                    Empezar Curso
+                <a href="#lessons" className="px-8 py-3 bg-accent text-amber-900 font-bold rounded-xl shadow-lg hover:shadow-xl hover:bg-amber-400 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                   <Rocket size={20}/> Empezar Curso
                 </a>
-                <Link to="/manual" className="px-8 py-3 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20 backdrop-blur-sm transition-all flex items-center justify-center gap-2">
-                    <BookOpen size={20}/> Manual Interactivo
+                <Link to="/sandbox" className="px-8 py-3 bg-white text-primary font-bold rounded-xl shadow-lg hover:shadow-xl hover:bg-indigo-50 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                    <Box size={20}/> Sandbox (Crear)
+                </Link>
+            </div>
+            <div className="mt-6 flex justify-center">
+                <Link to="/manual" className="px-6 py-2 bg-white/10 text-indigo-100 font-semibold rounded-lg hover:bg-white/20 backdrop-blur-sm transition-all flex items-center gap-2 text-sm">
+                    <BookOpen size={16}/> Manual de Referencia
                 </Link>
             </div>
         </div>
@@ -45,7 +50,7 @@ const Home = () => {
                     <div className="w-12 h-12 bg-indigo-100 text-primary rounded-xl flex items-center justify-center font-bold text-xl group-hover:bg-primary group-hover:text-white transition-colors">
                     {lesson.id}
                     </div>
-                    {lesson.id <= 2 && <Star size={20} className="text-accent fill-accent" />}
+                    {lesson.id <= 5 && <Star size={20} className="text-accent fill-accent" />}
                 </div>
                 <h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:text-primary transition-colors">{lesson.title}</h3>
                 <p className="text-slate-600 leading-relaxed flex-1">{lesson.description}</p>

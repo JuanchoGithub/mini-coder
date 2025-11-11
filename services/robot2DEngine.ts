@@ -12,7 +12,10 @@ export const isInside = (x: number, y: number, rx: number, ry: number, rw: numbe
 export const executeStep = (world: WorldState2D, instruction: RobotInstruction): WorldState2D => {
     // Deep copy state to avoid mutations
     const nextWorld: WorldState2D = JSON.parse(JSON.stringify(world));
-    const { robot, objects } = nextWorld;
+    const { robot, objects, zones } = nextWorld;
+
+    // Ensure visitedZones exists (for older states or custom worlds without it initally)
+    if (!robot.visitedZones) robot.visitedZones = [];
 
     if (nextWorld.status !== 'running') return nextWorld;
 
@@ -24,6 +27,7 @@ export const executeStep = (world: WorldState2D, instruction: RobotInstruction):
         case 'MOVE':
             const distance = instruction.param || 0;
             const rad = (robot.angle * Math.PI) / 180;
+            // Smaller steps for collision detection could be better, but simple end-point check for now
             const dx = Math.cos(rad) * distance;
             const dy = Math.sin(rad) * distance;
             
@@ -34,7 +38,7 @@ export const executeStep = (world: WorldState2D, instruction: RobotInstruction):
             if (newX < 20 || newX > 480 || newY < 20 || newY > 480) {
                 robot.crashed = true;
                 nextWorld.status = 'failed';
-                nextWorld.log.push("❌ ¡CRASH! El robot chocó contra la pared.");
+                nextWorld.log.push("❌ ¡CRASH! El robot chocó contra el borde del mundo.");
                 return nextWorld;
             }
 
@@ -64,6 +68,20 @@ export const executeStep = (world: WorldState2D, instruction: RobotInstruction):
                     heldObj.y = robot.y + Math.sin(rad) * 25;
                 }
             }
+
+            // Track visited zones
+            for (const zone of zones) {
+                if (isInside(robot.x, robot.y, zone.x, zone.y, zone.width, zone.height)) {
+                    // Only add if it's different from the last one visited to avoid duplicates while moving inside
+                    const lastVisited = robot.visitedZones[robot.visitedZones.length - 1];
+                    if (lastVisited !== zone.id) {
+                        robot.visitedZones.push(zone.id);
+                        // Optional: Log zone entry? Might be too noisy.
+                        // nextWorld.log.push(`📍 Entrando en ${zone.label}`);
+                    }
+                }
+            }
+
             nextWorld.log.push(`🤖 Avanzando ${distance} pasos.`);
             break;
 

@@ -86,6 +86,7 @@ export interface Robot2DState {
     gripperOpen: boolean;
     holdingObjectId: string | null;
     crashed: boolean;
+    visitedZones: string[]; // Track which zones the robot has passed through in order
 }
 
 export interface WorldState2D {
