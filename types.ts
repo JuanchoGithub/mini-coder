@@ -1,4 +1,9 @@
 
+export interface ExerciseErrorHint {
+  codeIncludes: string; // A string to look for in the student's code.
+  hint: string;         // The helpful message to display if the string is found.
+}
+
 export interface LessonStep {
   type: 'theory' | 'exercise' | 'code' | 'logic-simulation' | 'logic-simulation-2d';
   title: string;
@@ -8,6 +13,7 @@ export interface LessonStep {
     initialCode?: string;
     solutionCues?: string[]; // Keywords to look for in code to loosely validate
     expectedOutput?: string;
+    errorHints?: ExerciseErrorHint[]; // New: For providing targeted feedback on common mistakes
   };
   scenarioId?: string; // For logic-simulation steps
 }

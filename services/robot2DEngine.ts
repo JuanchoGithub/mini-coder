@@ -19,6 +19,8 @@ export const executeStep = (world: WorldState2D, instruction: RobotInstruction):
 
     if (nextWorld.status !== 'running') return nextWorld;
 
+    const GRIPPER_DISTANCE = 35; // Standard distance from robot center to gripper tip
+
     switch (instruction.type) {
         case 'WAIT':
             nextWorld.log.push("🤖 Esperando...");
@@ -64,8 +66,8 @@ export const executeStep = (world: WorldState2D, instruction: RobotInstruction):
                 const heldObj = objects.find(o => o.id === robot.holdingObjectId);
                 if (heldObj) {
                     // Object sits slightly in front of robot center
-                    heldObj.x = robot.x + Math.cos(rad) * 25;
-                    heldObj.y = robot.y + Math.sin(rad) * 25;
+                    heldObj.x = robot.x + Math.cos(rad) * GRIPPER_DISTANCE;
+                    heldObj.y = robot.y + Math.sin(rad) * GRIPPER_DISTANCE;
                 }
             }
 
@@ -90,6 +92,17 @@ export const executeStep = (world: WorldState2D, instruction: RobotInstruction):
             // Normalize angle
             robot.angle = robot.angle % 360;
             if (robot.angle < 0) robot.angle += 360;
+            
+            // If holding an object, update its position based on the new angle
+            if (robot.holdingObjectId) {
+                const heldObj = objects.find(o => o.id === robot.holdingObjectId);
+                if (heldObj) {
+                    const newRad = (robot.angle * Math.PI) / 180;
+                    heldObj.x = robot.x + Math.cos(newRad) * GRIPPER_DISTANCE;
+                    heldObj.y = robot.y + Math.sin(newRad) * GRIPPER_DISTANCE;
+                }
+            }
+
             nextWorld.log.push(`🤖 Girando ${instruction.param}°`);
             break;
 
@@ -117,10 +130,9 @@ export const executeStep = (world: WorldState2D, instruction: RobotInstruction):
              const gripStrength = instruction.param || 1;
 
              // Find grabbable object in front of robot
-             // Gripper position is approx 30 units in front of robot center
              const radGrip = (robot.angle * Math.PI) / 180;
-             const gripperX = robot.x + Math.cos(radGrip) * 35;
-             const gripperY = robot.y + Math.sin(radGrip) * 35;
+             const gripperX = robot.x + Math.cos(radGrip) * GRIPPER_DISTANCE;
+             const gripperY = robot.y + Math.sin(radGrip) * GRIPPER_DISTANCE;
 
              let grabbedSomething = false;
              for (const obj of objects) {

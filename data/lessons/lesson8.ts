@@ -86,7 +86,7 @@ Vamos a crear un juego clásico. La computadora pensará en un número secreto y
 Este es un ejemplo perfecto para un \`DO WHILE\`, porque no sabemos cuántos intentos te llevará. Además, combina bucles con las decisiones (\`IF/ELSEIF\`) que aprendiste en la Lección 6.
       `,
       exercise: {
-        prompt: "Juega e intenta adivinar el número. Observa cómo el bucle no te deja salir hasta que tu 'intento' sea igual al 'secreto'.",
+        prompt: "El juego funciona, pero el número secreto siempre es 7. Modifica el código para que el número secreto sea 25 y el mensaje inicial avise que el rango es de 1 a 50.",
         initialCode: `secreto = 7
 intento = 0
 

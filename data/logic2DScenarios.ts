@@ -1,4 +1,3 @@
-
 import { Scenario2D, RobotInstruction } from '../types';
 import { isInside } from '../services/robot2DEngine';
 
@@ -48,20 +47,22 @@ export const scenarios2D: Scenario2D[] = [
             return { complete: false };
         }
     },
-    // EJERCICIO 2: LAVADERO (DUCHA)
+    // EJERCICIO 2: LAVADERO (DUCHA) - REDESIGNED
     {
         id: 'robot-shower',
         title: 'Lavadero Automático',
-        description: 'MiniBot necesita un baño. Debes pasar por las zonas en ORDEN EXACTO: 1. Jabón (🧼) -> 2. Agua (🚿) -> 3. Secado (💨). Si te saltas un paso, ¡saldrás sucio!',
+        description: 'MiniBot necesita un baño. Debes pasar por las zonas en ORDEN EXACTO: 1. Jabón (🧼) -> 2. Agua (🚿) -> 3. Secado (💨). ¡La ruta ya no es una línea recta!',
         initialWorld: {
             status: 'running',
             log: [],
-            robot: { x: 50, y: 250, angle: 0, gripperOpen: true, holdingObjectId: null, crashed: false, visitedZones: [] },
-            objects: [],
+            robot: { x: 50, y: 450, angle: -90, gripperOpen: true, holdingObjectId: null, crashed: false, visitedZones: [] },
+            objects: [
+                 { id: 'wall1', emoji: '🧱', x: 250, y: 250, width: 30, height: 250, isGrabbable: false }
+            ],
             zones: [
-                { id: 'soap', x: 150, y: 200, width: 60, height: 100, label: '1. JABÓN 🧼' },
-                { id: 'water', x: 250, y: 200, width: 60, height: 100, label: '2. AGUA 🚿' },
-                { id: 'dry', x: 350, y: 200, width: 60, height: 100, label: '3. SECADO 💨' }
+                { id: 'soap', x: 20, y: 20, width: 100, height: 80, label: '1. JABÓN 🧼' },
+                { id: 'water', x: 380, y: 20, width: 100, height: 80, label: '2. AGUA 🚿' },
+                { id: 'dry', x: 200, y: 400, width: 100, height: 80, label: '3. SECADO 💨' }
             ]
         },
         availableInstructions: [
@@ -71,57 +72,79 @@ export const scenarios2D: Scenario2D[] = [
             { id: 'rot_-90', type: 'ROTATE', label: 'Girar Izq. (90°)', param: -90 },
         ],
         goalCheck: (world) => {
-            // Check the sequence in visitedZones
-            // We need to find specifically 'soap', then 'water', then 'dry' in that relative order in the array.
             const visited = world.robot.visitedZones || [];
-            const soapIndex = visited.indexOf('soap');
-            const waterIndex = visited.lastIndexOf('water'); // Use lastIndexOf to ensure it was visited AFTER soap if entered multiple times, simplish logic
-            const dryIndex = visited.lastIndexOf('dry');
-
-            // Need to be currently in 'dry' or have finished the sequence.
-            // Let's just say if they reached 'dry' and the history is correct.
+            // Filter out consecutive duplicates to only care about the sequence of entering new zones
+            const sequence = visited.filter((zone, index) => zone !== visited[index - 1]);
             
-            if (isInside(world.robot.x, world.robot.y, 350, 200, 60, 100)) { // currently in dry zone
-                 if (soapIndex !== -1 && waterIndex !== -1 && soapIndex < waterIndex) {
-                     return { complete: true };
-                 } else if (soapIndex === -1) {
-                     return { complete: false, error: '¡Llegaste al final pero no usaste jabón!' };
-                 } else if (waterIndex === -1 || waterIndex < soapIndex) {
-                     return { complete: false, error: '¡Tienes jabón pero no te enjuagaste con agua!' };
-                 }
+            const soapIndex = sequence.indexOf('soap');
+            const waterIndex = sequence.indexOf('water');
+            const dryIndex = sequence.indexOf('dry');
+
+            // The ultimate goal is to have visited all three in order.
+            if (soapIndex !== -1 && waterIndex > soapIndex && dryIndex > waterIndex) {
+                return { complete: true };
             }
+
+            // Provide helpful feedback if the goal isn't met.
+            const lastZone = sequence[sequence.length - 1];
+            if (lastZone === 'dry') { // They reached the end but the sequence is wrong
+                if (soapIndex === -1) return { complete: false, error: '¡Llegaste al final pero te saltaste el jabón!' };
+                if (waterIndex === -1 || waterIndex < soapIndex) return { complete: false, error: '¡Tienes jabón, pero te olvidaste de enjuagar con agua!' };
+            }
+            if(lastZone === 'water' && soapIndex === -1) {
+                return { complete: false, error: '¡Te enjuagaste antes de usar el jabón!' };
+            }
+
 
             return { complete: false };
         }
     },
-    // EJERCICIO 3: ESTACIONAMIENTO
+    // EJERCICIO 3: ESTACIONAMIENTO - REDISEÑADO
     {
         id: 'robot-parking',
-        title: 'Misión: Estacionar',
-        description: 'Estaciona a MiniBot en la zona designada (🅿️). El espacio es muy estrecho, ¡cuidado con las paredes! Tip: Quizás necesites girar antes de entrar.',
+        title: 'Misión: Estacionamiento de Precisión',
+        description: 'Misión: Estacionamiento en paralelo. Estaciona a MiniBot en el espacio libre (🅿️) entre los dos bloques de construcción. Necesitarás avanzar, retroceder y girar con mucha precisión. ¡Es un desafío de verdad!',
         initialWorld: {
             status: 'running',
             log: [],
-            robot: { x: 100, y: 350, angle: 0, gripperOpen: true, holdingObjectId: null, crashed: false, visitedZones: [] },
+            robot: { x: 50, y: 350, angle: 0, gripperOpen: true, holdingObjectId: null, crashed: false, visitedZones: [] },
             objects: [
-                { id: 'w1', emoji: '🧱', x: 300, y: 100, width: 30, height: 200, isGrabbable: false },
-                { id: 'w2', emoji: '🧱', x: 420, y: 100, width: 30, height: 200, isGrabbable: false },
-                { id: 'w3', emoji: '🧱', x: 300, y: 100, width: 150, height: 30, isGrabbable: false }, // back wall
+                // Obstáculos que simulan otros autos
+                { id: 'obs1a', emoji: '🧱', x: 170, y: 420, width: 30, height: 30, isGrabbable: false },
+                { id: 'obs1b', emoji: '🧱', x: 140, y: 420, width: 30, height: 30, isGrabbable: false },
+                { id: 'obs2a', emoji: '🧱', x: 330, y: 420, width: 30, height: 30, isGrabbable: false },
+                { id: 'obs2b', emoji: '🧱', x: 360, y: 420, width: 30, height: 30, isGrabbable: false },
+                
+                // Bordillo/Pared trasera para que no se pase
+                { id: 'curb1', emoji: '🚧', x: 150, y: 480, width: 30, height: 30, isGrabbable: false },
+                { id: 'curb2', emoji: '🚧', x: 200, y: 480, width: 30, height: 30, isGrabbable: false },
+                { id: 'curb3', emoji: '🚧', x: 250, y: 480, width: 30, height: 30, isGrabbable: false },
+                { id: 'curb4', emoji: '🚧', x: 300, y: 480, width: 30, height: 30, isGrabbable: false },
+                { id: 'curb5', emoji: '🚧', x: 350, y: 480, width: 30, height: 30, isGrabbable: false },
             ],
             zones: [
-                { id: 'parking', x: 330, y: 130, width: 90, height: 150, label: 'ESTACIONAMIENTO 🅿️' }
+                { id: 'parking', x: 200, y: 400, width: 120, height: 60, label: '🅿️' }
             ]
         },
         availableInstructions: [
             { id: 'move_50', type: 'MOVE', label: 'Avanzar 50', param: 50 },
+            { id: 'move_100', type: 'MOVE', label: 'Avanzar 100', param: 100 },
             { id: 'move_back_50', type: 'MOVE', label: 'Retroceder 50', param: -50 },
+            { id: 'rot_45', type: 'ROTATE', label: 'Girar Der. (45°)', param: 45 },
+            { id: 'rot_-45', type: 'ROTATE', label: 'Girar Izq. (45°)', param: -45 },
             { id: 'rot_90', type: 'ROTATE', label: 'Girar Der. (90°)', param: 90 },
             { id: 'rot_-90', type: 'ROTATE', label: 'Girar Izq. (90°)', param: -90 },
         ],
         goalCheck: (world) => {
             const parking = world.zones.find(z => z.id === 'parking');
-            if (parking && isInside(world.robot.x, world.robot.y, parking.x, parking.y, parking.width, parking.height)) {
-                return { complete: true };
+            // Goal is met if the robot is *mostly* inside the zone and straight
+            if (parking && isInside(world.robot.x, world.robot.y, parking.x + 10, parking.y + 10, parking.width - 20, parking.height - 20)) {
+                // Check if robot is relatively straight (facing left or right)
+                if (world.robot.angle < 10 || world.robot.angle > 350 || (world.robot.angle > 170 && world.robot.angle < 190) ) {
+                    return { complete: true };
+                } else {
+                    return { complete: false, error: '¡Estás en el lugar, pero el auto está torcido!' };
+                }
             }
             return { complete: false };
         }

@@ -1,4 +1,3 @@
-
 import { Lesson } from '../../types';
 
 export const lesson10: Lesson = {
@@ -61,7 +60,7 @@ Aquí tienes el software completo de la Coder-1.
 *   **REPORTE:** Muestra el estado actual de la nave.
       `,
       exercise: {
-        prompt: "Llega al Sector 5 sin que la energía de tu nave llegue a 0. ¡Cuidado con los Klingons!",
+        prompt: "Tu nave es muy débil para esta misión. Modifica los valores iniciales para que la nave comience con 200 de energía y 5 torpedos. ¡Ahora tendrás más oportunidades!",
         initialCode: `REM --- INICIALIZACIÓN DE LA NAVE ---
 PRINT "=== MISIÓN: ODISEA ESTELAR ==="
 mision_activa = 1

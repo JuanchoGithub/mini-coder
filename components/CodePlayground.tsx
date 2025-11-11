@@ -7,7 +7,7 @@ import { ExecutionResult } from '../types';
 
 interface CodePlaygroundProps {
   initialCode: string;
-  onRunComplete?: (result: ExecutionResult) => void;
+  onRunComplete?: (result: ExecutionResult, code: string) => void;
 }
 
 const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunComplete }) => {
@@ -36,14 +36,14 @@ const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunCompl
       setError(result.error);
       setIsWaitingForInput(false);
       // Notify parent even on error, so we can have exercises that require causing errors
-      if (onRunComplete) onRunComplete(result);
+      if (onRunComplete) onRunComplete(result, code);
     } else {
       // Keep previous output if we were just waiting for input, otherwise set new
       setOutput(result.output);
       setIsWaitingForInput(!!result.isWaitingForInput);
       
       if (onRunComplete && !result.isWaitingForInput) {
-          onRunComplete(result);
+          onRunComplete(result, code);
       }
     }
   };

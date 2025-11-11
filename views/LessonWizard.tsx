@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import CodePlayground from '../components/CodePlayground';
 import LogicSimulator from '../components/LogicSimulator';
 import RobotSimulator2D from '../components/RobotSimulator2D';
-import { ChevronLeft, ChevronRight, CheckCircle, Home } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle, Home, ClipboardCopy, Check } from 'lucide-react';
 import { ExecutionResult } from '../types';
 
 const LessonWizard = () => {
@@ -17,6 +17,7 @@ const LessonWizard = () => {
   const lesson = lessons.find(l => l.id === lessonId);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [exerciseCompleted, setExerciseCompleted] = useState(false);
+  const [exerciseHint, setExerciseHint] = useState<string | null>(null);
 
   if (!lesson) return <div className="p-8 text-center text-2xl font-bold text-slate-400">Lección no encontrada 😔</div>;
 
@@ -29,6 +30,7 @@ const LessonWizard = () => {
     } else {
       setCurrentStepIndex(prev => prev + 1);
       setExerciseCompleted(false);
+      setExerciseHint(null);
     }
   };
 
@@ -36,36 +38,113 @@ const LessonWizard = () => {
     if (currentStepIndex > 0) {
       setCurrentStepIndex(prev => prev - 1);
       setExerciseCompleted(false); 
+      setExerciseHint(null);
     }
   };
 
-  const checkExercise = (result: ExecutionResult) => {
-      if (!currentStep.exercise) return;
-      if (currentStep.exercise.expectedOutput === "DONE") return;
+  const checkExercise = (result: ExecutionResult, code: string) => {
+    if (!currentStep.exercise) return;
 
-      // Special case: The exercise specifically WANTS an error to happen (e.g. Lesson 1, breaking syntax)
-      if (currentStep.exercise.expectedOutput === '$$ERROR$$') {
-          if (result.error) {
-              setExerciseCompleted(true);
-          }
-          return;
-      }
+    // These exercises are completed manually by the user
+    if (currentStep.exercise.expectedOutput === "DONE") return;
 
-      // Normal case: we want success and maybe specific output
-      if (result.error) return; // If we didn't expect an error but got one, it's not complete.
+    setExerciseHint(null); // Reset hint on every run
 
-      let isSuccess = false;
-      if (currentStep.exercise.expectedOutput) {
-           isSuccess = result.output.some(line => line.trim() === currentStep.exercise?.expectedOutput);
-      } else {
-          // Default: just running it successfully and getting ANY output is enough
-          isSuccess = result.output.length > 0;
-      }
+    // Case 1: The exercise expects a specific error
+    if (currentStep.exercise.expectedOutput === '$$ERROR$$') {
+        if (result.error) {
+            setExerciseCompleted(true);
+        } else {
+            setExerciseHint("El objetivo era causar un error de sintaxis, pero tu código funcionó. ¡Intenta romperlo a propósito!");
+        }
+        return;
+    }
 
-      if (isSuccess) {
-          setExerciseCompleted(true);
-      }
+    // Case 2: The code produced an unexpected error
+    if (result.error) {
+        setExerciseCompleted(false); // Ensure it's not marked as complete
+        // The error is already displayed in the console, no extra hint needed here.
+        return;
+    }
+
+    // Case 3: Check for correct output
+    let isSuccess = false;
+    if (currentStep.exercise.expectedOutput) {
+        const actualOutput = result.output.join('\n').trim();
+        const expectedOutput = currentStep.exercise.expectedOutput.trim();
+        isSuccess = actualOutput === expectedOutput;
+    } else {
+        // If no output is specified, any output is considered a success
+        isSuccess = result.output.length > 0;
+    }
+
+    if (isSuccess) {
+        setExerciseCompleted(true);
+        return;
+    }
+
+    // Case 4: Output is incorrect, provide hints
+    // First, try to find a specific pre-written hint based on common mistakes
+    if (currentStep.exercise.errorHints) {
+        for (const errorHint of currentStep.exercise.errorHints) {
+            if (code.includes(errorHint.codeIncludes)) {
+                setExerciseHint(errorHint.hint);
+                return; // Found a specific hint, we're done.
+            }
+        }
+    }
+    
+    // As a last resort, if no specific hint was found, show the user the expected output.
+    if (currentStep.exercise.expectedOutput) {
+        setExerciseHint(`La salida no es correcta. La consola debería mostrar exactamente esto:\n\n${currentStep.exercise.expectedOutput}`);
+    }
+};
+
+  // Custom component for rendering <pre> blocks in Markdown with a copy button
+  // FIX: Provide a proper type for `props` to avoid errors with `children`.
+  const CustomPre = (props: React.ComponentProps<'pre'>) => {
+    const { children } = props;
+    const [isCopied, setIsCopied] = useState(false);
+
+    // Helper to recursively get text content from React children
+    const getCodeString = (node: React.ReactNode): string => {
+        if (typeof node === 'string') return node;
+        if (Array.isArray(node)) return node.map(getCodeString).join('');
+        // FIX: Safely access props.children by casting, as React.isValidElement does not guarantee its presence.
+        if (React.isValidElement(node) && (node.props as { children?: React.ReactNode }).children) {
+            return getCodeString((node.props as { children: React.ReactNode }).children);
+        }
+        return '';
+    };
+
+    const codeString = getCodeString(children).trim();
+
+    const handleCopy = () => {
+        if (codeString) {
+            navigator.clipboard.writeText(codeString).then(() => {
+                setIsCopied(true);
+                setTimeout(() => setIsCopied(false), 2000); // Reset after 2s
+            }).catch(err => {
+                console.error("Failed to copy text: ", err);
+            });
+        }
+    };
+    
+    return (
+        <div className="relative group bg-slate-800 text-slate-100 p-6 my-4 rounded-xl shadow-inner">
+             {/* The <pre> from markdown will be nested here. Reset its styles to avoid conflicts. */}
+            <pre {...props} className="!bg-transparent !p-0 !m-0 !shadow-none !whitespace-pre-wrap !text-sm" /> 
+            <button
+                onClick={handleCopy}
+                className="absolute top-4 right-4 p-2 bg-slate-700 text-slate-300 rounded-md opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all duration-200 hover:bg-slate-600"
+                aria-label="Copiar código"
+            >
+                {isCopied ? <Check size={16} className="text-green-400" /> : <ClipboardCopy size={16} />}
+            </button>
+        </div>
+    );
   };
+
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
@@ -98,8 +177,8 @@ const LessonWizard = () => {
                 </span>
                 <h2 className="text-3xl font-bold text-slate-900 mb-6">{currentStep.title}</h2>
                 
-                <div className="prose prose-slate prose-lg max-w-none prose-headings:text-slate-800 prose-p:text-slate-600 prose-strong:text-primary prose-code:text-pink-600 prose-code:bg-pink-50 prose-code:px-1 prose-code:rounded prose-pre:bg-slate-900 prose-pre:shadow-lg mb-8">
-                    <ReactMarkdown>{currentStep.content}</ReactMarkdown>
+                <div className="prose prose-slate prose-lg max-w-none prose-headings:text-slate-800 prose-p:text-slate-600 prose-strong:text-primary prose-code:text-pink-600 prose-code:bg-pink-50 prose-code:px-1 prose-code:rounded mb-8">
+                    <ReactMarkdown components={{ pre: CustomPre }}>{currentStep.content}</ReactMarkdown>
                 </div>
             </div>
 
@@ -143,9 +222,14 @@ const LessonWizard = () => {
                      <div className="bg-amber-50 border-l-4 border-amber-400 p-4 mb-4 text-amber-800 font-medium">
                         💡 Tu misión: {currentStep.exercise.prompt}
                      </div>
+                    {exerciseHint && (
+                      <div className="mt-4 mb-4 bg-blue-50 border-l-4 border-blue-400 p-4 text-blue-800 font-medium animate-fadeIn whitespace-pre-wrap">
+                        🤔 Pista: {exerciseHint}
+                      </div>
+                    )}
                     <CodePlayground 
                         initialCode={currentStep.exercise.initialCode || ''} 
-                        onRunComplete={checkExercise}
+                        onRunComplete={(result, code) => checkExercise(result, code)}
                     />
                 </div>
             )}

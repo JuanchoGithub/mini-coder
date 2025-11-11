@@ -1,3 +1,4 @@
+
 import { Lesson } from '../../types';
 
 export const lesson7: Lesson = {
@@ -93,10 +94,11 @@ En cada vuelta, añadimos una estrella más a nuestra variable \`linea$\` y la i
 
 ' --- TU BUCLE VA AQUÍ ---
 ' Debe contar de 10 a 1, usando STEP -1
+' En cada vuelta, debe imprimir el número del contador.
 
 
-PRINT "¡DESPEGUE! 🚀"`
-,
+PRINT "¡DESPEGUE! 🚀"`,
+        expectedOutput: "¡DESPEGUE! 🚀",
         solutionCues: ['FOR', 'TO', 'STEP', '-1', 'NEXT']
       }
     }

@@ -31,7 +31,7 @@ Hemos preparado un juego completo. Tu misión es:
 3.  ¡Experimentar! Intenta cambiar los textos, añadir una nueva habitación o un nuevo objeto.
       `,
       exercise: {
-        prompt: "Derrota al Minotauro y escapa. Pista: explora bien antes de ir a su guarida.",
+        prompt: "El juego es un poco difícil. Aumenta la vida inicial del jugador a 5 cambiando el valor de la variable 'vida' al principio del código.",
         initialCode: `REM --- CONFIGURACIÓN INICIAL DEL JUEGO ---
 jugando = 1
 vida = 3

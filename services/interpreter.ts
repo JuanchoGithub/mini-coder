@@ -1,3 +1,4 @@
+
 import { ExecutionResult } from '../types';
 
 // MiniQB Interpreter Engine
@@ -80,7 +81,7 @@ const evaluateExpression = (expr: string, vars: Variables): any => {
     // 0. Handle RND() function first before variable substitution
     evalStr = evalStr.replace(/\bRND\s*\(\s*([^)]+)\s*\)/gi, (match, p1) => {
         const max = parseInt(evaluateExpression(p1, vars));
-        // FIX: The callback for String.prototype.replace must return a string.
+        // The callback for String.prototype.replace must return a string.
         if (isNaN(max) || max <= 0) return '1';
         return String(Math.floor(Math.random() * max) + 1);
     });
@@ -138,6 +139,11 @@ const evaluateExpression = (expr: string, vars: Variables): any => {
         // Very dangerous in real apps, acceptable for this constrained sandbox educational tool.
         // eslint-disable-next-line no-new-func
         const result = Function(`"use strict"; return (${evalStr})`)();
+
+        // FIX: Detect NaN result, which indicates an invalid math operation on a string, and treat it as a type error.
+        if (typeof result === 'number' && isNaN(result)) {
+            throw new Error(`Error de tipo: No se puede realizar una operación matemática con texto.`);
+        }
         
         // QB behavior: True is often -1, False is 0.
         // For simplicity in teaching, we'll map JS true/false to 1/0 as per lessons.
@@ -145,10 +151,13 @@ const evaluateExpression = (expr: string, vars: Variables): any => {
             return result ? 1 : 0;
         }
         return result;
-    } catch (e) {
-        // If eval fails, it might be a bare string without quotes that the user intended to print.
-        // In a real BASIC this might be an error, but here we can be forgiving or just return raw.
-        return expr; 
+    } catch (e: any) {
+        // If it's our custom error, let it pass through.
+        if (e.message.startsWith('Error de tipo')) {
+            throw e;
+        }
+        // Otherwise, it's a real syntax error from the Function() constructor.
+        throw new Error(`Error de sintaxis en la expresión: "${expr}"`);
     }
 };
 
