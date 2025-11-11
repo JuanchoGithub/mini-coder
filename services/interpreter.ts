@@ -1,4 +1,3 @@
-
 import { ExecutionResult } from '../types';
 
 // MiniQB Interpreter Engine
@@ -35,7 +34,7 @@ let currentState: InterpreterState = {
 };
 
 export const KEYWORDS = [
-    'PRINT', 'INPUT', 'LET', 'DIM', 'IF', 'THEN', 'ELSE', 'ELSEIF', 'END', 'FOR', 'TO', 'STEP', 'NEXT', 'DO', 'WHILE', 'UNTIL', 'LOOP', 'REM', 'CLS'
+    'PRINT', 'INPUT', 'LET', 'DIM', 'IF', 'THEN', 'ELSE', 'ELSEIF', 'END', 'FOR', 'TO', 'STEP', 'NEXT', 'DO', 'WHILE', 'UNTIL', 'LOOP', 'REM', 'CLS', 'RND'
 ];
 
 export const KEYWORD_HELP: Record<string, string> = {
@@ -52,7 +51,8 @@ export const KEYWORD_HELP: Record<string, string> = {
   'WHILE': 'Usado en DO loops para repetir MIENTRAS algo sea verdadero.',
   'LOOP': 'Marca el final de un bucle DO y vuelve al principio.',
   'REM': 'Marca una línea como comentario (ignorado por la computadora). También puedes usar \'.',
-  'CLS': 'Limpia la pantalla de salida.'
+  'CLS': 'Limpia la pantalla de salida.',
+  'RND': 'Genera un número aleatorio. Ejemplo: dado = RND(6) te da un número del 1 al 6.'
 };
 
 const resetState = () => {
@@ -76,6 +76,14 @@ function escapeRegExp(string: string) {
 const evaluateExpression = (expr: string, vars: Variables): any => {
     let evalStr = expr.trim();
     if (evalStr === '') return '';
+
+    // 0. Handle RND() function first before variable substitution
+    evalStr = evalStr.replace(/\bRND\s*\(\s*([^)]+)\s*\)/gi, (match, p1) => {
+        const max = parseInt(evaluateExpression(p1, vars));
+        // FIX: The callback for String.prototype.replace must return a string.
+        if (isNaN(max) || max <= 0) return '1';
+        return String(Math.floor(Math.random() * max) + 1);
+    });
 
     // 1. Protect string literals temporarily
     const stringLiterals: string[] = [];
@@ -334,13 +342,6 @@ export const executeCode = (code: string, inputVal?: string): ExecutionResult =>
                    if (evaluateCondition(condStr, currentState.variables)) {
                        currentState.blockStack.push({ type: 'IF', line: jumpTo }); // Treat as new IF block
                        currentState.currentLineIndex = jumpTo;
-                       // Break out of while to let main loop execute this line next (wait, no, we want to execute NEXT line)
-                       // Actually, if we found a true ELSEIF, we just want to enter it.
-                       // Setting currentLineIndex to jumpTo means it will execute THIS line next loop.
-                       // But we already evaluated it. We should increment.
-                       // Let's just set it and 'continue' outer loop, it will increment at bottom?
-                       // No, if we set it to jumpTo, we need it to NOT increment immediately if we want to execute body.
-                       // Actually, if we are AT the ELSEIF line, the body starts at jumpTo + 1.
                        break; 
                    } else {
                        jumpTo = findElseOrEndIf(lines, jumpTo);
@@ -352,21 +353,18 @@ export const executeCode = (code: string, inputVal?: string): ExecutionResult =>
               if (lines[jumpTo]?.trim().toUpperCase() === 'ELSE') {
                   currentState.blockStack.push({ type: 'IF', line: i });
               }
-              // If END IF, we just continue past it (increment at bottom of loop will handle it)
-              // If ELSEIF (matched above and broke), we continue, it will increment at bottom and execute body.
+              // If we broke out of the while loop because we found a true ELSEIF, we want to execute the line AFTER it.
+              // But if we exited because we hit an ELSE or END IF, we want to execute the line AFTER that.
+              // The logic is tricky. Let's adjust. If we break, we've already set the line index. The main loop will increment it.
               if (lines[jumpTo]?.trim().toUpperCase().startsWith('ELSEIF')) {
-                   // We matched an ELSEIF, so we are effectively "inside" it now.
-                   // We need to push block so standard END IF works.
-                   // Logic above already pushed it if matched.
+                  // We broke from the loop, meaning we found a true one.
+                  // The line index is set to the ELSEIF. The main loop will increment it, and we'll start executing its body.
+                  // This is correct.
+              } else {
+                  // We finished the chain, landing on an ELSE or END IF.
+                  // The line index is set to that line. The main loop will increment it.
+                  // This is also correct.
               }
-              
-              continue; // Skip standard increment if we jumped? Actually standard increment at bottom is fine if we jumped TO the line we want to 'execute' (which means skip past).
-              // Wait, if we jumped to ELSE, we want to execute next line.
-              // If we jumped to END IF, we want to execute next line.
-              // Current logic increments at bottom. So if we set index to 'jumpTo', next it will exec 'jumpTo+1'.
-              // That works for ELSE (body starts after).
-              // For END IF, it works (continues after).
-              // For ELSEIF matched, we want body after.
           }
 
       // --- ELSEIF ---
@@ -386,8 +384,12 @@ export const executeCode = (code: string, inputVal?: string): ExecutionResult =>
 
       // --- END IF ---
       } else if (upperLine === 'END IF') {
-          currentState.blockStack.pop(); // Done with IF block
-
+          const block = currentState.blockStack[currentState.blockStack.length - 1];
+          if (block && block.type === 'IF') {
+              currentState.blockStack.pop(); // Done with IF block
+          }
+          // If top is not IF, we assume it's from a skipped block, so we do nothing.
+          
       // --- DO WHILE ... ---
       } else if (upperLine.startsWith('DO WHILE ')) {
           const conditionStr = rawLine.substring(9).trim();
@@ -409,7 +411,7 @@ export const executeCode = (code: string, inputVal?: string): ExecutionResult =>
                const condition = evaluateCondition(block.meta, currentState.variables);
                if (condition) {
                    currentState.currentLineIndex = block.line; // Jump back to DO
-                   continue;
+                   // We don't increment at the bottom of the loop
                } else {
                    currentState.blockStack.pop(); // Loop finished
                }

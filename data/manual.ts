@@ -1,8 +1,7 @@
-
 export interface ManualEntry {
   id: string;
   title: string;
-  category: 'Conceptos' | 'Entrada/Salida' | 'Decisiones' | 'Bucles';
+  category: 'Conceptos' | 'Entrada/Salida' | 'Decisiones' | 'Bucles' | 'Funciones';
   description: string;
   syntax?: string;
   example: string;
@@ -103,6 +102,24 @@ DO WHILE respuesta <> secreto
   IF respuesta > secreto THEN PRINT "Más bajo..."
 LOOP
 PRINT "¡Correcto! Era el " + secreto`
+  },
+  {
+    id: 'rnd',
+    title: 'RND',
+    category: 'Funciones',
+    description: 'Devuelve un número entero aleatorio entre 1 y un máximo que tú especifiques. Es la función clave para crear juegos impredecibles y divertidos.',
+    syntax: 'RND(número_máximo)',
+    example: `' Lanza un dado de 6 caras
+dado = RND(6)
+PRINT "Salió el número " + dado
+
+' Simula una moneda
+moneda = RND(2)
+IF moneda = 1 THEN
+  PRINT "Cara"
+ELSE
+  PRINT "Cruz"
+END IF`
   },
   {
     id: 'cls',

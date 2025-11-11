@@ -83,7 +83,7 @@ const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunCompl
         </div>
 
         {/* Editor & Output Split */}
-        <div className="flex-1 flex flex-col md:flex-row">
+        <div className="flex-1 flex flex-col md:flex-row min-h-0">
           <div className="flex-1 relative min-h-[200px]">
             <CodeEditor
                 code={code}
