@@ -1,49 +1,103 @@
-
 import { Lesson } from '../../types';
 
 export const lesson7: Lesson = {
   id: 7,
-  title: "Bucles I: Repetir X veces",
-  description: "Cuando sabes exactamente cuántas veces quieres hacer algo.",
+  title: "Bucles I: Repeticiones Controladas (FOR)",
+  description: "Aprende a repetir tareas un número exacto de veces, e incluso a contar hacia atrás.",
   steps: [
     {
       type: 'theory',
-      title: "El problema de repetir",
+      title: "La pereza es la madre de la invención",
       content: `
-Imagina que te castigan en la escuela y debes escribir 100 veces "No debo tirar papeles en clase".
-¡Es aburridísimo! Para una computadora, es pan comido.
+Imagina que debes escribir 100 veces "No debo tirar papeles en clase". Sería tedioso y propenso a errores.
+Las computadoras son expertas en tareas repetitivas. Para eso, usamos **Bucles** (loops).
 
-Los **Bucles** (loops) nos permiten repetir instrucciones sin escribirlas una por una.
+Hay dos tipos principales de bucles. En esta lección veremos el primero: el que se usa cuando sabes **exactamente cuántas veces** quieres repetir algo.
       `
     },
     {
       type: 'theory',
-      title: "El Bucle FOR (Para...)",
+      title: "El Contador Automático: FOR...NEXT",
       content: `
-Usamos \`FOR\` cuando sabemos el número exacto de repeticiones. Es como un reloj que hace tictac un número fijo de veces.
+El bucle \`FOR\` es como contratar a un robot para que cuente por ti.
 
 \`\`\`basic
 FOR i = 1 TO 5
   PRINT "Esta es la repetición número " + i
 NEXT i
 \`\`\`
-*   **FOR i = 1 TO 5**: "Empieza una cuenta en 1, y termina cuando llegue a 5".
-*   **NEXT i**: "Vuelve arriba e incrementa el contador".
+Desglosemos esto:
+*   **\`FOR i = 1 TO 5\`**: Le dices a la computadora: "Crea una variable temporal llamada \`i\` (por índice) y asígnale el valor \`1\`. Repite el siguiente bloque de código hasta que \`i\` llegue a \`5\`".
+*   **\`PRINT ...\`**: Este es el código que se repetirá en cada "vuelta" del bucle.
+*   **\`NEXT i\`**: Le dice a la computadora: "Fin de la vuelta. Suma 1 a \`i\` y vuelve al \`FOR\`. Si \`i\` ya superó el 5, entonces termina el bucle y continúa con el resto del programa".
       `
     },
     {
+      type: 'theory',
+      title: "Cambiando el Paso: STEP",
+      content: `
+Por defecto, \`FOR\` cuenta de uno en uno. Pero podemos cambiar eso con la palabra clave **STEP** (paso).
+
+**Contar de 2 en 2:**
+\`\`\`basic
+PRINT "Números pares:"
+FOR i = 2 TO 10 STEP 2
+  PRINT i
+NEXT i
+' SALIDA: 2, 4, 6, 8, 10
+\`\`\`
+
+**¡Contar hacia atrás!**
+\`\`\`basic
+PRINT "Cuenta regresiva..."
+FOR i = 5 TO 1 STEP -1
+  PRINT i
+NEXT i
+PRINT "¡DESPEGUE! 🚀"
+' SALIDA: 5, 4, 3, 2, 1, ¡DESPEGUE!
+\`\`\`
+`
+    },
+    {
+      type: 'theory',
+      title: "Uso Creativo: Dibujando con Bucles",
+      content: `
+Los bucles no solo sirven para contar. Sirven para **construir** cosas.
+¿Recuerdas que el operador \`+\` une textos? Podemos usar eso dentro de un bucle para crear patrones.
+
+\`\`\`basic
+linea$ = ""
+FOR i = 1 TO 5
+    linea$ = linea$ + "*"
+    PRINT linea$
+NEXT i
+\`\`\`
+Este código producirá una pirámide:
+\`\`\`
+*
+**
+***
+****
+*****
+\`\`\`
+En cada vuelta, añadimos una estrella más a nuestra variable \`linea$\` y la imprimimos.
+`
+    },
+    {
       type: 'code',
-      title: "La Máquina de Tablas",
-      content: "Vamos a crear una máquina que sepa cualquier tabla de multiplicar. Usaremos un bucle que vaya del 1 al 10.",
+      title: "Ejercicio: Lanzamiento del Cohete",
+      content: "Vamos a programar el lanzamiento de un cohete. Necesita una cuenta regresiva de 10 a 1. Al final, debe imprimir '¡Despegue!'. ¡Necesitarás usar `STEP -1`!",
       exercise: {
-        prompt: "Cambia la variable 'tabla' para ver otras tablas. ¡La computadora hace el trabajo duro!",
-        initialCode: `tabla = 7
-PRINT "--- Tabla del " + tabla + " ---"
-FOR contador = 1 TO 10
-    resultado = tabla * contador
-    PRINT tabla + " x " + contador + " = " + resultado
-NEXT contador`,
-        solutionCues: ['FOR', 'TO', 'NEXT']
+        prompt: "Crea un bucle FOR que cuente hacia atrás desde 10 y luego imprima el mensaje de despegue.",
+        initialCode: `PRINT "Iniciando secuencia de lanzamiento..."
+
+' --- TU BUCLE VA AQUÍ ---
+' Debe contar de 10 a 1, usando STEP -1
+
+
+PRINT "¡DESPEGUE! 🚀"`
+,
+        solutionCues: ['FOR', 'TO', 'STEP', '-1', 'NEXT']
       }
     }
   ]

@@ -4,7 +4,7 @@ import { Lesson } from '../../types';
 export const lesson9: Lesson = {
   id: 9,
   title: "Proyecto Final: Tu Aventura",
-  description: "Combina todo lo aprendido: Variables, IF, INPUT y Bucles en un juego real.",
+  description: "Combina todo lo aprendido: Variables, Operaciones, IF y Bucles en un juego real.",
   steps: [
     {
       type: 'theory',

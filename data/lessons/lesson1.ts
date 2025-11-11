@@ -61,12 +61,14 @@ La orden más básica en casi cualquier lenguaje es la que le dice a la computad
       type: 'theory',
       title: "La importancia de la Sintaxis",
       content: `
-¿Notaste las comillas \`"\` en el ejercicio anterior?
 En español, si te olvidas de un acento, la gente te entiende igual. La computadora NO.
+A las reglas estrictas de cómo se debe escribir un lenguaje las llamamos **Sintaxis**.
 
-A las reglas estrictas de cómo se debe escribir un lenguaje de programación las llamamos **Sintaxis**.
-*   \`PRINT "Hola"\` ✅ (La computadora entiende que "Hola" es texto porque está entre comillas).
-*   \`PRINT Hola\` ❌ (La computadora se confunde: ¿Hola es un comando? ¿Una variable? ¡Error!).
+Tiene varios niveles, igual que un idioma humano:
+1.  **Léxico (Palabras):** ¿Está bien escrita la palabra? \`PRINT\` existe, pero \`PRNT\` no.
+2.  **Gramática (Frases):** ¿Están las palabras en el orden correcto? \`PRINT "Hola"\` funciona, pero \`"Hola" PRINT\` no.
+
+Si fallas en esto, la computadora ni siquiera intentará ejecutar tu programa. Te gritará: **SYNTAX ERROR**.
       `
     },
     {
@@ -77,13 +79,25 @@ Parte fundamental de aprender a programar es perder el miedo a los errores. Los 
 
 Un mensaje de error no es un castigo, es la computadora pidiéndote ayuda porque no entendió algo.
 
-Intenta escribir mal el comando a propósito (por ejemplo, \`PRNT\` en lugar de \`PRINT\`) y mira qué pasa.
+Intenta provocar un **Error de Sintaxis** escribiendo mal el comando (ej: \`PRINT ("Hola"\` sin cerrar el paréntesis).
       `,
       exercise: {
-          prompt: "Genera tu primer error. Escribe 'PRINT' mal y ejecuta.",
-          initialCode: 'PRNT "Esto va a fallar"',
+          prompt: "Genera un Syntax Error. Rompe el comando PRINT a propósito.",
+          initialCode: 'PRINT ("Esto va a fallar"',
           expectedOutput: "$$ERROR$$"
       }
+    },
+    {
+      type: 'theory',
+      title: "No todos los errores son iguales",
+      content: `
+A veces tu código está perfectamente escrito (Sintaxis correcta), pero falla al ejecutarse. Estos son **Errores Semánticos** (o de lógica).
+
+Es como decir en español: *"La tostada se comió al gato"*.
+Gramaticalmente la frase es perfecta (Sujeto + Verbo + Predicado), pero el **significado** es absurdo.
+
+En programación, un error semántico sería intentar usar una variable que todavía no existe, o intentar dividir un número por cero. La computadora te entendió, ¡pero lo que le pediste es imposible!
+      `
     },
     {
       type: 'code',
@@ -106,9 +120,9 @@ PRINT "¡que se convirtió en experto!"`,
       title: "Resumen",
       content: `
 *   **Programar** es dar instrucciones precisas para resolver problemas.
-*   Usamos **Lenguajes de Programación** para no tener que hablar en binario (1s y 0s).
-*   La **Sintaxis** son las reglas de escritura y ¡son estrictas!
-*   Los **Errores** son normales y nos ayudan a aprender.
+*   La **Sintaxis** son las reglas de escritura (palabras y gramática).
+*   **Error de Sintaxis:** "No entendí lo que escribiste".
+*   **Error Semántico:** "Entendí lo que escribiste, pero no tiene sentido".
 *   Los programas se ejecutan en **orden**, de arriba a abajo.
 
 ¿Listo para aprender a "pensar" como ese Genio Tonto del que hablamos? Pasemos a la siguiente lección.

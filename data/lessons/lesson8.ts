@@ -1,63 +1,109 @@
-
 import { Lesson } from '../../types';
 
 export const lesson8: Lesson = {
   id: 8,
-  title: "Bucles II: Repetir hasta que...",
-  description: "Cuando NO sabes cuántas veces tendrás que repetir algo.",
+  title: "Bucles II: Repeticiones Indefinidas (DO)",
+  description: "Aprende a repetir código cuando no sabes cuándo parar, y cómo evitar el temido bucle infinito.",
   steps: [
     {
       type: 'theory',
-      title: "¿Y si no sé cuándo parar?",
+      title: "FOR vs. DO: ¿Cuándo uso cuál?",
       content: `
-El bucle \`FOR\` es genial si sabes que quieres repetir algo 10 veces.
-¿Pero qué pasa si quieres repetir algo **mientras** el usuario no adivine una contraseña? Podría tardar 1 intento, o 1000.
+Ya eres un experto en bucles \`FOR\`. Pero tienen una limitación: debes saber de antemano cuántas veces vas a repetir algo.
 
-Ahí entra el **DO WHILE** (Hacer Mientras...).
+*   **Bucle Definido (\`FOR\`):** "Repite esto 10 veces". "Procesa estos 50 emails". Sabes el número.
+*   **Bucle Indefinido (\`DO\`):** "Repite esto HASTA QUE el usuario adivine la clave". "Sigue atacando MIENTRAS el jefe final tenga vida". No sabes el número, depende de una condición.
+
+Para los bucles indefinidos, usamos la estructura **DO WHILE ... LOOP**.
       `
     },
     {
       type: 'theory',
-      title: "El portero obstinado",
+      title: "Hacer Mientras... (DO WHILE)",
       content: `
-\`DO WHILE\` repite un bloque de código MIENTRAS una condición sea verdadera.
+El bucle \`DO WHILE\` es como un guardia obstinado. Repite un bloque de código **MIENTRAS** una condición sea verdadera.
 
 \`\`\`basic
 clave$ = ""
 DO WHILE clave$ <> "secreto"
    INPUT "Dime la clave: ", clave$
 LOOP
-PRINT "¡Bienvenido!"
+PRINT "¡Bienvenido, agente!"
 \`\`\`
-El programa se queda "atrapado" en el bucle hasta que la condición (\`clave$ <> "secreto"\`) deja de ser cierta.
+El programa se queda "atrapado" en el bucle. En cada vuelta, comprueba la condición \`clave$ <> "secreto"\`. Si es verdadera, ejecuta el \`INPUT\` de nuevo. Solo cuando escribes "secreto", la condición se vuelve falsa, y el programa puede "escapar" del bucle y continuar.
       `
     },
     {
-      type: 'code',
-      title: "El adivino persistente",
+      type: 'theory',
+      title: "El Patrón de la 'Variable Bandera'",
       content: `
-Vamos a hacer un juego donde tienes que adivinar un número. El programa no terminará hasta que aciertes.
-Observa cómo usamos una variable \`adivinado\` que empieza en 0 (Falso) y cambia a 1 (Verdadero) solo cuando aciertas.
+Una técnica muy común es usar una variable que actúe como un interruptor o "bandera" (flag) para controlar el bucle.
+
+\`\`\`basic
+jugando = 1 ' 1 significa 'SÍ, seguir jugando'
+
+DO WHILE jugando = 1
+   PRINT "--- Menú Principal ---"
+   INPUT "Elige una opción (1=Jugar, 0=Salir): ", opcion
+   IF opcion = 0 THEN
+      jugando = 0 ' Bajamos la bandera para salir
+   END IF
+LOOP
+
+PRINT "Gracias por jugar."
+\`\`\`
+El bucle continuará para siempre hasta que una acción DENTRO del bucle cambie el valor de \`jugando\` a \`0\`.
+      `
+    },
+    {
+      type: 'theory',
+      title: "¡Peligro! El Bucle Infinito",
+      content: `
+Este es uno de los **errores semánticos** más comunes y frustrantes para un programador novato.
+
+Un bucle infinito ocurre cuando la condición de un \`DO WHILE\` **nunca** se vuelve falsa. El programa se queda atrapado para siempre, repitiendo el mismo código sin parar, y usualmente tienes que cerrarlo a la fuerza.
+
+**¿Cómo ocurre?**
+Generalmente, porque olvidas incluir DENTRO del bucle el código que podría cambiar la condición.
+
+\`\`\`basic
+' ERROR: BUCLE INFINITO
+respuesta$ = "no"
+DO WHILE respuesta$ <> "si"
+   PRINT "Esto se repetirá para siempre..."
+   ' ¡ERROR! Olvidamos preguntar de nuevo al usuario.
+   ' Falta un INPUT para cambiar el valor de respuesta$
+LOOP
+\`\`\`
+`
+    },
+    {
+      type: 'code',
+      title: "Juego: Adivina el Número",
+      content: `
+Vamos a crear un juego clásico. La computadora pensará en un número secreto y tú tendrás que adivinarlo. El programa te dará pistas de "Más alto" o "Más bajo".
+
+Este es un ejemplo perfecto para un \`DO WHILE\`, porque no sabemos cuántos intentos te llevará. Además, combina bucles con las decisiones (\`IF/ELSEIF\`) que aprendiste en la Lección 6.
       `,
       exercise: {
-        prompt: "Ejecuta el juego e intenta adivinar el número secreto (es el 5).",
-        initialCode: `secreto = 5
-adivinado = 0
+        prompt: "Juega e intenta adivinar el número. Observa cómo el bucle no te deja salir hasta que tu 'intento' sea igual al 'secreto'.",
+        initialCode: `secreto = 7
+intento = 0
 
-PRINT "Estoy pensando en un número del 1 al 10..."
+PRINT "He pensado en un número del 1 al 10. ¡Adivínalo!"
 
-DO WHILE adivinado = 0
-    INPUT "¿Cuál es? ", intento
-    IF intento = secreto THEN
-        PRINT "¡EXACTO! ¡Lo adivinaste!"
-        adivinado = 1
-    ELSE
-        PRINT "Nop. Intenta de nuevo."
+DO WHILE intento <> secreto
+    INPUT "Tu intento: ", intento
+    
+    IF intento < secreto THEN
+        PRINT "Demasiado bajo... ¡Más alto!"
+    ELSEIF intento > secreto THEN
+        PRINT "Demasiado alto... ¡Más bajo!"
     END IF
 LOOP
 
-PRINT "Fin del juego."`,
-        solutionCues: ['DO WHILE', 'LOOP', '= 1']
+PRINT "¡CORRECTO! El número era " + secreto + ". ¡Ganaste!"`,
+        solutionCues: ['DO WHILE', 'LOOP', 'IF', 'ELSEIF']
       }
     }
   ]
