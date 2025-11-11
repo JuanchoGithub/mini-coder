@@ -210,5 +210,62 @@ export const logicScenarios: LogicScenario[] = [
             apply: (s) => ({ ...s, estado_auto: 'APAGADO' })
         }
     ]
+  },
+  // LECCION 3: BUG INVISIBLE
+  {
+      id: 'battery-fix',
+      title: 'El Bug Invisible',
+      description: 'Tarea: Cambiar la batería vieja por una nueva. Parece fácil, pero hay un peligro invisible que tu "sentido común" humano detectaría, pero el robot no.',
+      initialState: {
+          panel: 'CERRADO',
+          energia_residual: 'CARGADO ⚡',
+          bateria: 'VIEJA 🪫',
+          robot_estado: 'OK 😊'
+      },
+      stateDescriptions: {
+          panel: (val) => `🚪 Panel de acceso: ${val}`,
+          energia_residual: (val) => `⚡ Capacitor interno: ${val}`,
+          bateria: (val) => `🔋 Batería actual: ${val}`,
+          robot_estado: (val) => `🤖 Estado del técnico: ${val}`
+      },
+      goal: (state) => state.bateria === 'NUEVA 🔋' && state.panel === 'CERRADO' && state.robot_estado === 'OK 😊',
+      actions: [
+          {
+              id: 'abrir_panel',
+              label: 'ABRIR PANEL',
+              check: (s) => s.panel === 'CERRADO' || "El panel ya está abierto.",
+              apply: (s) => ({ ...s, panel: 'ABIERTO' })
+          },
+          {
+              id: 'esperar',
+              label: 'ESPERAR 5 SEGUNDOS',
+              check: (s) => {
+                  if (s.panel === 'CERRADO') return "No sirve de nada esperar mirando el panel cerrado.";
+                  return true;
+              },
+              apply: (s) => ({ ...s, energia_residual: 'DESCARGADO 😌' })
+          },
+          {
+              id: 'cambiar_bateria',
+              label: 'CAMBIAR BATERÍA',
+              check: (s) => {
+                  if (s.panel === 'CERRADO') return "No puedes alcanzar la batería con el panel cerrado.";
+                  if (s.robot_estado !== 'OK 😊') return "El robot está frito, no puede trabajar.";
+                  
+                  // EL BUG: Si no esperaste, te electrocutas.
+                  if (s.energia_residual === 'CARGADO ⚡') {
+                       return "¡ZAP! ⚡ Te electrocutaste con la energía residual. Debiste esperar a que se descargara.";
+                  }
+                  return true;
+              },
+              apply: (s) => ({ ...s, bateria: 'NUEVA 🔋' })
+          },
+          {
+              id: 'cerrar_panel',
+              label: 'CERRAR PANEL',
+              check: (s) => s.panel === 'ABIERTO' || "El panel ya está cerrado.",
+              apply: (s) => ({ ...s, panel: 'CERRADO' })
+          }
+      ]
   }
 ];
