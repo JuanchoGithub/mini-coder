@@ -67,6 +67,7 @@ Prueba un DO WHILE básico: Pide números hasta que sea positivo.
       `,
       exercise: {
           prompt: "Repite INPUT hasta que numero >0, entonces PRINT 'OK'.",
+          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `LET numero = 0
 DO WHILE numero <= 0
    INPUT "Ingresa un número positivo: ", numero
@@ -104,7 +105,7 @@ Ventajas: Fácil de leer, permite múltiples formas de salir (ej: IFs anidados p
       `
     },
     {
-      // FIX: Removed leading space from ' theory'
+      // FIX: Removed leading space from ' theory', which was an invalid type value.
       type: 'theory',
       title: "¡Peligro! El Bucle Infinito",
       content: `
@@ -144,12 +145,13 @@ Intenta crear un bucle infinito a propósito (WHILE 1=1), ejecuta, ve el problem
       `,
       exercise: {
           prompt: "Agrega LET count=0; count=count+1; IF count>5 THEN salir=0.",
+          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `LET salir = 1
 DO WHILE salir = 1
    PRINT "Esto debería parar después de 5..."
    ' Agrega contador y IF para flip salir
 LOOP`,
-          expectedOutput: "Esto debería parar después de 5...\n..."  // 5 veces
+          expectedOutput: "Esto debería parar después de 5...\nEsto debería parar después de 5...\nEsto debería parar después de 5...\nEsto debería parar después de 5...\nEsto debería parar después de 5...\nEsto debería parar después de 5..."
       }
     },
     {

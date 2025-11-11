@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 // FIX: Import GameStateValue for type casting.
 import { LogicScenario, LogicAction, GameState, GameStateValue } from '../types';

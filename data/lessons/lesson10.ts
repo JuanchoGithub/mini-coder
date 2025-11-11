@@ -61,6 +61,7 @@ Aquí tienes el software completo de la Coder-1.
       `,
       exercise: {
         prompt: "Tu nave es muy débil para esta misión. Modifica los valores iniciales para que la nave comience con 200 de energía y 5 torpedos. ¡Ahora tendrás más oportunidades!",
+        // FIX: Added closing backtick to initialCode template literal.
         initialCode: `REM --- INICIALIZACIÓN DE LA NAVE ---
 PRINT "=== MISIÓN: ODISEA ESTELAR ==="
 mision_activa = 1

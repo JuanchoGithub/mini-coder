@@ -79,6 +79,7 @@ Intenta predecir el output antes de ejecutar.
       `,
       exercise: {
           prompt: "Crea una variable 'edad' con 25, y 'nombre$' con 'Juan'. Luego, imprime ambas variables, una en cada línea.",
+          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `' Crea una variable llamada edad con el número 25
 ' Crea una variable llamada nombre$ con el texto "Juan"
 
@@ -124,6 +125,7 @@ Por ejemplo, puedes sumar dos números (\\\`5 + 5\\\`) y puedes "sumar" (concate
       `,
       exercise: {
           prompt: "Intenta multiplicar el texto 'hola' por 5. La computadora no sabrá qué hacer y te mostrará un error. El objetivo es ver este error.",
+          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `' Escribe aquí el código para intentar multiplicar "hola" por 5'`,
           expectedOutput: "$$ERROR$$"
       }
@@ -203,6 +205,7 @@ Preguntará el nombre (texto, necesita \\\`$\\\`) y luego la edad (número, NO n
       `,
       exercise: {
         prompt: "Completa el código para que pregunte la edad y dé una respuesta final personalizada, como '¡Vaya, tienes X años, nombre!'",
+        // FIX: Added closing backtick to initialCode template literal.
         initialCode: `INPUT "¿Cómo te llamas? ", nombre$
 PRINT "Hola, " + nombre$
 

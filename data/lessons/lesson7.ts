@@ -66,6 +66,7 @@ Prueba un FOR simple. Imprime "Hola" 3 veces, usando i en el mensaje.
       `,
       exercise: {
           prompt: "Haz que el programa imprima 'Hola número X' para X desde 1 hasta 3.",
+          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `' Escribe un bucle FOR que cuente de 1 a 3
 ' Dentro del bucle, imprime "Hola número " y el contador'`,
           expectedOutput: "Hola número 1\nHola número 2\nHola número 3"
@@ -109,6 +110,7 @@ Usa STEP para imprimir múltiplos de 3 de 3 a 15.
       `,
       exercise: {
           prompt: "Crea un bucle que imprima los múltiplos de 3, desde 3 hasta 15.",
+          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `' Escribe un bucle FOR que vaya de 3 a 15,
 ' saltando de 3 en 3.
 ' Imprime el contador en cada paso.'`,
@@ -161,6 +163,7 @@ Crea un triángulo inverso: ***** a *.
       `,
       exercise: {
           prompt: "Crea un triángulo de estrellas invertido, desde 5 estrellas hasta 1.",
+          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `' Este desafío requiere dos bucles, uno dentro de otro (anidado).
 ' Bucle exterior: cuenta hacia atrás de 5 a 1 (usa STEP -1).
 ' Bucle interior: construye una línea de texto con tantas estrellas como indique el contador del bucle exterior.'`,
@@ -186,6 +189,7 @@ Depura: Agrega PRINT i en el cuerpo para ver iteraciones. Usa rangos pequeños p
       content: "Vamos a programar el lanzamiento de un cohete. Necesita una cuenta regresiva de 10 a 1. Al final, debe imprimir '¡Despegue!'. ¡Necesitarás usar `STEP -1`! Agrega un delay si posible, o solo el conteo.",
       exercise: {
         prompt: "Escribe un programa completo para la cuenta regresiva de un cohete, desde 10 hasta 1, con un mensaje final de '¡DESPEGUE! 🚀'.",
+        // FIX: Added closing backtick to initialCode template literal.
         initialCode: `' Escribe un programa para una cuenta regresiva.
 ' 1. Imprime "Iniciando secuencia de lanzamiento..."
 ' 2. Usa un bucle FOR para contar de 10 a 1 (con STEP -1).

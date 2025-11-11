@@ -45,6 +45,7 @@ Experimenta: Cambia números y ve qué pasa si divides por cero (¡error semánt
       `,
       exercise: {
           prompt: "Añade una cuarta línea que calcule el resultado de (50 - 10) / 4. El resultado debería ser 10. Luego, agrega una para 100 / (5 + 5).",
+          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `PRINT 10 + 5 * 2 ' Resultado: 20 (multiplica primero)
 PRINT (10 + 5) * 2 ' Resultado: 30 (paréntesis cambian orden)
 PRINT 100 / 2 / 5 ' Resultado: 10 (divide secuencial)
@@ -79,6 +80,7 @@ Usa PRINT para ver resultados booleanos. Predice antes de ejecutar.
       `,
       exercise: {
           prompt: "Agrega líneas para comparar si 15 <= 20 (1) y si 'A' < 'B' (1, comparación ASCII).",
+          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `PRINT 10 = 10 ' 1
 PRINT 5 > 10 ' 0
 

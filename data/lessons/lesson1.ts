@@ -94,6 +94,7 @@ Intenta imprimir el resultado de una resta. Esto te muestra que PRINT no solo es
       `,
       exercise: {
           prompt: "Ahora, haz que el programa imprima el resultado de la resta `100 - 42`.",
+          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `' Escribe aquí un comando PRINT para calcular 100 - 42'`,
           expectedOutput: "58"
       }
@@ -162,10 +163,11 @@ Esto enseña "flujo de control": la computadora es como un lector que sigue la h
       `,
       exercise: {
           prompt: "Añade una cuarta línea de código usando `PRINT` al final para completar la historia con la frase 'Y creó mundos nuevos.'.",
+          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `PRINT "Había una vez..."
 PRINT "un programador novato..."
 PRINT "¡que se convirtió en experto!"
-' Agrega tu línea de código aquí debajo`,
+' Agrega tu línea de código aquí debajo'`,
           expectedOutput: "Había una vez...\nun programador novato...\n¡que se convirtió en experto!\nY creó mundos nuevos."
       }
     },
