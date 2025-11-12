@@ -66,11 +66,12 @@ const Manual = () => {
         </div>
 
         <nav className="flex-1 overflow-y-auto p-4 pt-0">
-            {Object.entries(categories).map(([category, entries]) => (
+            {/* FIX: Use Object.keys to avoid a type inference issue with Object.entries that caused the `entries` array to be typed as `unknown`. */}
+            {Object.keys(categories).map((category) => (
                 <div key={category} className="mb-6">
                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">{category}</h3>
                     <ul className="space-y-1">
-                        {entries.map(entry => (
+                        {categories[category].map(entry => (
                             <li key={entry.id}>
                                 <button
                                     onClick={() => setSearchParams({ topic: entry.id })}

@@ -7,9 +7,10 @@ interface CodeEditorProps {
   onChange: (newCode: string) => void;
   onCursorWordChange: (word: string) => void;
   readOnly?: boolean;
+  fontSize: number;
 }
 
-const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange, onCursorWordChange, readOnly = false }) => {
+const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange, onCursorWordChange, readOnly = false, fontSize }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const preRef = useRef<HTMLPreElement>(null);
 
@@ -88,7 +89,10 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange, onCursorWordCha
   };
 
   return (
-    <div className="relative w-full h-full font-mono text-base overflow-hidden bg-[#f0f0f0] rounded-xl border border-slate-300 focus-within:border-primary transition-colors">
+    <div
+        className="relative w-full h-full font-mono overflow-hidden bg-[#f0f0f0] rounded-xl border border-slate-300 focus-within:border-primary transition-colors"
+        style={{ fontSize: `${fontSize}px` }}
+    >
        {/* Lighter gray background for that retro feel */}
       <pre
         ref={preRef}

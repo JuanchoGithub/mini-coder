@@ -101,9 +101,10 @@ const LogicSimulator: React.FC<LogicSimulatorProps> = ({ scenario, onComplete })
             <div className="mb-6">
                 <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Estado Actual</h3>
                 <div className="bg-slate-100 p-3 rounded-xl text-sm space-y-2 border border-slate-200 font-mono">
-                    {Object.entries(scenario.stateDescriptions).map(([key, descFn]) => (
+                    {/* FIX: Use Object.keys to avoid a type inference issue with Object.entries that caused the description function to be treated as a non-callable object. */}
+                    {Object.keys(scenario.stateDescriptions).map((key) => (
                         <div key={key} className={key === 'robot_loc' || key === 'robot_mano' ? 'font-bold text-blue-700' : 'text-slate-600'}>
-                            {descFn(simulationState[key])}
+                            {scenario.stateDescriptions[key](simulationState[key] as GameStateValue)}
                         </div>
                     ))}
                 </div>

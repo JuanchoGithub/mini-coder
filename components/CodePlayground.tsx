@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import CodeEditor from './CodeEditor';
 import SidebarHelp from './SidebarHelp';
 import { executeCode } from '../services/interpreter';
-import { Play, Terminal, RotateCcw, CornerDownLeft } from 'lucide-react';
+import { Play, Terminal, RotateCcw, CornerDownLeft, ZoomIn, ZoomOut } from 'lucide-react';
 import { ExecutionResult, OutputLine } from '../types';
 
 interface CodePlaygroundProps {
@@ -15,6 +15,7 @@ const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunCompl
   const [output, setOutput] = useState<OutputLine[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [currentWord, setCurrentWord] = useState('');
+  const [fontSize, setFontSize] = useState(14); // Default font size
   const [isWaitingForInput, setIsWaitingForInput] = useState(false);
   const [inputValue, setInputValue] = useState('');
   
@@ -54,6 +55,14 @@ const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunCompl
       setInputValue('');
   };
 
+  const handleIncreaseFontSize = () => {
+    setFontSize(prev => Math.min(prev + 1, 24)); // Max 24px
+  };
+
+  const handleDecreaseFontSize = () => {
+    setFontSize(prev => Math.max(prev - 1, 10)); // Min 10px
+  };
+
   return (
     <div className="flex h-[500px] border border-slate-200 rounded-2xl overflow-hidden shadow-sm bg-white">
       {/* Main Area */}
@@ -67,6 +76,14 @@ const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunCompl
                     <div className="w-3 h-3 rounded-full bg-green-400"></div>
                 </div>
                 <span className="ml-3 text-sm font-medium text-slate-600">Editor MiniCode</span>
+                <div className="flex items-center gap-1 ml-2 border-l border-slate-300 pl-3">
+                    <button onClick={handleDecreaseFontSize} className="p-1 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded-md transition-colors" title="Reducir tamaño de letra">
+                        <ZoomOut size={16} />
+                    </button>
+                    <button onClick={handleIncreaseFontSize} className="p-1 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded-md transition-colors" title="Aumentar tamaño de letra">
+                        <ZoomIn size={16} />
+                    </button>
+                </div>
             </div>
           <div className="flex gap-2">
              <button onClick={() => { setCode(initialCode); setOutput([]); setError(null); setIsWaitingForInput(false); }} className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded-lg transition-colors" title="Reiniciar Código">
@@ -90,6 +107,7 @@ const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunCompl
                 onChange={setCode}
                 onCursorWordChange={setCurrentWord}
                 readOnly={isWaitingForInput}
+                fontSize={fontSize}
             />
           </div>
 
