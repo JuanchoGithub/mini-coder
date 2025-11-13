@@ -28,7 +28,7 @@ const CodePlayground: React.FC<CodePlaygroundProps> = (props) => {
   const [fontSize, setFontSize] = useState(14); // Default font size
   const [isWaitingForInput, setIsWaitingForInput] = useState(false);
   const [inputValue, setInputValue] = useState('');
-  const [isHelpVisible, setIsHelpVisible] = useState(false);
+  const [isHelpVisible, setIsHelpVisible] = useState(true);
   const [isRunning, setIsRunning] = useState(false);
   
   // For uncontrolled mode, reset code when initialCode prop changes (e.g., new lesson step)
