@@ -94,7 +94,7 @@ const LogicSimulator: React.FC<LogicSimulatorProps> = ({ scenario, onComplete })
   };
 
   return (
-    <div className="flex flex-col lg:flex-row h-[600px] border border-slate-200 rounded-2xl overflow-hidden bg-slate-50">
+    <div className="flex flex-col lg:flex-row border border-slate-200 rounded-2xl overflow-hidden bg-slate-50">
         
         {/* Left Panel: Available Actions & State */}
         <div className="lg:w-1/3 bg-white border-r border-slate-200 p-4 flex flex-col">
@@ -139,9 +139,9 @@ const LogicSimulator: React.FC<LogicSimulatorProps> = ({ scenario, onComplete })
                 </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto bg-slate-200/50 rounded-xl p-4 space-y-2 border-2 border-dashed border-slate-300">
+            <div className="bg-slate-200/50 rounded-xl p-4 space-y-2 border-2 border-dashed border-slate-300">
                 {currentActions.length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center text-slate-400 italic">
+                    <div className="min-h-48 flex flex-col items-center justify-center text-slate-400 italic">
                         <ArrowRight size={32} className="mb-2 opacity-20" />
                         Añade acciones desde la izquierda
                     </div>
