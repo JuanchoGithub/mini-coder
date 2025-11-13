@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Scenario2D, RobotInstruction, WorldState2D } from '../types';
 import { executeStep } from '../services/robot2DEngine';
@@ -145,7 +146,7 @@ const RobotSimulator2D: React.FC<RobotSimulator2DProps> = ({ scenario, onComplet
     };
 
     return (
-        <div className="flex flex-col lg:flex-row h-[650px] border border-slate-200 rounded-2xl overflow-hidden bg-slate-50">
+        <div className="flex flex-col lg:flex-row h-full border border-slate-200 rounded-2xl overflow-hidden bg-slate-50">
             
             {/* Left Panel: Sequence Builder (The Program) */}
             <div className="lg:w-1/4 bg-slate-50 border-r border-slate-200 flex flex-col">
@@ -194,7 +195,7 @@ const RobotSimulator2D: React.FC<RobotSimulator2DProps> = ({ scenario, onComplet
             </div>
 
             {/* Middle Area: Canvas */}
-            <div className="flex-1 bg-slate-100 relative flex items-center justify-center p-4 overflow-hidden">
+            <div className="flex-1 bg-slate-100 relative flex items-center justify-center p-4 overflow-auto">
                 <div className="relative shadow-xl border-4 border-white rounded-xl overflow-hidden bg-white">
                         <canvas ref={canvasRef} width={500} height={500} className="bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTAgMGgyMHYyMEgwem0xIDFoMTh2MThIMXoiIGZpbGw9IiNmMWY1ZjkiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvc3ZnPg==')]"/>
                         

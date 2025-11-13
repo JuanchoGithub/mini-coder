@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import CodeEditor from './CodeEditor';
 import SidebarHelp from './SidebarHelp';
@@ -64,7 +65,7 @@ const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunCompl
   };
 
   return (
-    <div className="flex h-[500px] border border-slate-200 rounded-2xl overflow-hidden shadow-sm bg-white">
+    <div className="flex h-full border border-slate-200 rounded-2xl overflow-hidden shadow-sm bg-white">
       {/* Main Area */}
       <div className="flex-1 flex flex-col">
         {/* Toolbar */}
@@ -112,7 +113,7 @@ const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunCompl
           </div>
 
           {/* Output Terminal */}
-          <div className="md:w-2/5 bg-slate-900 text-slate-100 p-4 font-mono text-sm overflow-y-auto flex flex-col">
+          <div className="h-64 md:h-auto md:w-2/5 bg-slate-900 text-slate-100 p-4 font-mono text-sm overflow-y-auto flex flex-col">
             <div className="flex items-center gap-2 mb-2 opacity-50 text-xs uppercase tracking-wider font-bold">
                 <Terminal size={14} /> Consola
             </div>

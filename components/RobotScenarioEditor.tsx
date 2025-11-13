@@ -152,7 +152,7 @@ const RobotScenarioEditor: React.FC<RobotScenarioEditorProps> = ({ initialWorld,
                 </button>
             </div>
 
-            <div className="flex-1 bg-slate-100 relative flex items-center justify-center p-4 overflow-hidden">
+            <div className="flex-1 bg-slate-100 relative flex items-center justify-center p-4 overflow-auto">
                  <div className="relative shadow-xl border-4 border-dashed border-slate-300 rounded-xl overflow-hidden bg-white cursor-crosshair">
                      <canvas 
                         ref={canvasRef} 

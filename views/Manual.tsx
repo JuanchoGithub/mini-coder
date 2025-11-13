@@ -99,7 +99,7 @@ const Manual = () => {
                 <div className="flex items-center gap-2 mb-2 text-primary text-sm font-bold uppercase tracking-wider">
                     <Hash size={14} /> {currentEntry.category}
                 </div>
-                <h1 className="text-4xl font-extrabold text-slate-900 mb-6">{currentEntry.title}</h1>
+                <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-6">{currentEntry.title}</h1>
                 <div className="prose prose-slate max-w-none prose-lg prose-headings:text-slate-800 prose-code:text-pink-600 prose-code:bg-pink-50 prose-code:px-1 prose-code:rounded">
                     <ReactMarkdown>{currentEntry.description}</ReactMarkdown>
                 </div>

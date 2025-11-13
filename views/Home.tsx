@@ -2,13 +2,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { lessons } from '../data/lessons';
-import { Rocket, Code2, BookOpen, Star, Box } from 'lucide-react';
+import { Rocket, Code2, BookOpen, Star, Box, ChevronRight } from 'lucide-react';
 
 const Home = () => {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Hero Section */}
-      <div className="bg-primary text-white py-20 px-6 text-center relative overflow-hidden">
+      <div className="bg-primary text-white py-12 md:py-20 px-4 sm:px-6 text-center relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
             {/* Decorative background pattern */}
             <Code2 size={400} className="absolute -top-20 -left-20 rotate-12"/>
@@ -38,7 +38,7 @@ const Home = () => {
       </div>
 
       {/* Lesson Grid */}
-      <main id="lessons" className="max-w-5xl mx-auto py-16 px-6">
+      <main id="lessons" className="max-w-5xl mx-auto py-12 md:py-16 px-4 sm:px-6">
         <h2 className="text-2xl font-bold text-slate-800 mb-8 flex items-center gap-3">
             <BookOpen className="text-primary"/> Tu camino de aprendizaje
         </h2>
@@ -55,7 +55,7 @@ const Home = () => {
                 <h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:text-primary transition-colors">{lesson.title}</h3>
                 <p className="text-slate-600 leading-relaxed flex-1">{lesson.description}</p>
                 <div className="mt-6 text-primary font-semibold flex items-center gap-1 text-sm group-hover:underline">
-                    Empezar lección <ChevronRightMini />
+                    Empezar lección <ChevronRight className="w-4 h-4" />
                 </div>
               </div>
             </Link>
@@ -69,11 +69,5 @@ const Home = () => {
     </div>
   );
 };
-
-const ChevronRightMini = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-    <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
-  </svg>
-);
 
 export default Home;

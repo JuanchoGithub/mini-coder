@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { lessons } from '../data/lessons';
@@ -23,6 +24,8 @@ const LessonWizard = () => {
 
   const currentStep = lesson.steps[currentStepIndex];
   const isLastStep = currentStepIndex === lesson.steps.length - 1;
+  const hasBigComponent = ['code', 'logic-simulation', 'logic-simulation-2d'].includes(currentStep.type);
+
 
   const handleNext = () => {
     if (isLastStep) {
@@ -153,7 +156,7 @@ const LessonWizard = () => {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 py-4 px-8 flex items-center justify-between sticky top-0 z-50">
+      <header className="bg-white border-b border-slate-200 py-4 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-4">
             <Link to="/" className="p-2 rounded-full hover:bg-slate-100 text-slate-500 transition-colors">
                 <Home size={20} />
@@ -167,78 +170,32 @@ const LessonWizard = () => {
                 </div>
             </div>
         </div>
-        <div className="text-sm font-medium text-slate-500">
+        <div className="text-sm font-medium text-slate-500 hidden sm:block">
             Paso {currentStepIndex + 1} de {lesson.steps.length}
         </div>
       </header>
 
       {/* Content */}
-      <main className="flex-1 max-w-6xl w-full mx-auto p-6 md:p-8 flex flex-col">
-        <div className="flex-1 bg-white rounded-3xl shadow-sm border border-slate-100 p-8 md:p-10 animate-fadeIn flex flex-col">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-2 py-6 md:p-8 flex flex-col gap-6 md:gap-8">
+        <div className={`bg-white rounded-3xl shadow-sm border border-slate-100 p-4 md:p-10 animate-fadeIn flex flex-col ${!hasBigComponent ? 'flex-1' : ''}`}>
             <div className="mb-6">
                 <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 ${currentStep.type === 'theory' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>
                     {currentStep.type === 'theory' ? 'Teoría' : currentStep.type.includes('simulation') ? 'Simulador' : 'Práctica'}
                 </span>
-                <h2 className="text-3xl font-bold text-slate-900 mb-6">{currentStep.title}</h2>
+                <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-6">{currentStep.title}</h2>
                 
                 <div className="prose prose-slate prose-lg max-w-none prose-headings:text-slate-800 prose-p:text-slate-600 prose-strong:text-primary prose-code:text-pink-600 prose-code:bg-pink-50 prose-code:px-1 prose-code:rounded mb-8">
                     <ReactMarkdown components={{ pre: CustomPre }}>{currentStep.content}</ReactMarkdown>
                 </div>
             </div>
-
-            {/* Logic Simulator (Text) */}
-            {currentStep.type === 'logic-simulation' && currentStep.scenarioId && (
-                <div className="flex-1">
-                    {(() => {
-                        const scenario = logicScenarios.find(s => s.id === currentStep.scenarioId);
-                        return scenario ? (
-                            <LogicSimulator 
-                                scenario={scenario} 
-                                onComplete={() => setExerciseCompleted(true)}
-                            />
-                        ) : (
-                            <div className="text-red-500">Escenario de texto no encontrado</div>
-                        );
-                    })()}
-                </div>
-            )}
-
-             {/* Logic Simulator (2D) */}
-            {currentStep.type === 'logic-simulation-2d' && currentStep.scenarioId && (
-                <div className="flex-1">
-                    {(() => {
-                        const scenario = scenarios2D.find(s => s.id === currentStep.scenarioId);
-                        return scenario ? (
-                            <RobotSimulator2D 
-                                scenario={scenario} 
-                                onComplete={() => setExerciseCompleted(true)}
-                            />
-                        ) : (
-                            <div className="text-red-500">Escenario 2D no encontrado</div>
-                        );
-                    })()}
-                </div>
-            )}
-
-            {/* Code Playground */}
+            
+             {/* Prompts and simple exercises remain inside the white box */}
             {currentStep.type === 'code' && currentStep.exercise && (
-                <div className="mt-4">
-                     <div className="bg-amber-50 border-l-4 border-amber-400 p-4 mb-4 text-amber-800 font-medium">
-                        💡 Tu misión: {currentStep.exercise.prompt}
-                     </div>
-                    {exerciseHint && (
-                      <div className="mt-4 mb-4 bg-blue-50 border-l-4 border-blue-400 p-4 text-blue-800 font-medium animate-fadeIn whitespace-pre-wrap">
-                        🤔 Pista: {exerciseHint}
-                      </div>
-                    )}
-                    <CodePlayground 
-                        initialCode={currentStep.exercise.initialCode || ''} 
-                        onRunComplete={(result, code) => checkExercise(result, code)}
-                    />
-                </div>
+                 <div className="bg-amber-50 border-l-4 border-amber-400 p-4 text-amber-800 font-medium">
+                    💡 Tu misión: {currentStep.exercise.prompt}
+                 </div>
             )}
 
-            {/* Simple completion button for theory/mental exercises */}
             {currentStep.type === 'exercise' && currentStep.exercise?.expectedOutput === 'DONE' && (
                  <div className="mt-8 bg-indigo-50 p-6 rounded-2xl border border-indigo-100 flex flex-col items-center text-center">
                     <p className="text-indigo-900 text-lg font-medium mb-4">{currentStep.exercise.prompt}</p>
@@ -250,12 +207,65 @@ const LessonWizard = () => {
                     </button>
                  </div>
             )}
-
         </div>
+        
+        {/* --- INTERACTIVE COMPONENTS RENDERED EXTERNALLY --- */}
+        
+        {/* Logic Simulator (Text) */}
+        {currentStep.type === 'logic-simulation' && currentStep.scenarioId && (
+            <div className="flex-1">
+                {(() => {
+                    const scenario = logicScenarios.find(s => s.id === currentStep.scenarioId);
+                    return scenario ? (
+                        <LogicSimulator 
+                            scenario={scenario} 
+                            onComplete={() => setExerciseCompleted(true)}
+                        />
+                    ) : (
+                        <div className="text-red-500">Escenario de texto no encontrado</div>
+                    );
+                })()}
+            </div>
+        )}
+
+         {/* Logic Simulator (2D) */}
+        {currentStep.type === 'logic-simulation-2d' && currentStep.scenarioId && (
+            <div className="flex-1">
+                {(() => {
+                    const scenario = scenarios2D.find(s => s.id === currentStep.scenarioId);
+                    return scenario ? (
+                        <RobotSimulator2D 
+                            scenario={scenario} 
+                            onComplete={() => setExerciseCompleted(true)}
+                        />
+                    ) : (
+                        <div className="text-red-500">Escenario 2D no encontrado</div>
+                    );
+                })()}
+            </div>
+        )}
+
+        {/* Code Playground */}
+        {currentStep.type === 'code' && currentStep.exercise && (
+            <div className="flex-1 flex flex-col min-h-0">
+                {exerciseHint && (
+                  <div className="mb-4 bg-blue-50 border-l-4 border-blue-400 p-4 text-blue-800 font-medium animate-fadeIn whitespace-pre-wrap">
+                    🤔 Pista: {exerciseHint}
+                  </div>
+                )}
+                <div className="flex-1 min-h-0">
+                  <CodePlayground 
+                      initialCode={currentStep.exercise.initialCode || ''} 
+                      onRunComplete={(result, code) => checkExercise(result, code)}
+                  />
+                </div>
+            </div>
+        )}
+
       </main>
 
       {/* Footer Nav */}
-      <footer className="bg-white border-t border-slate-200 py-4 px-8 sticky bottom-0">
+      <footer className="bg-white border-t border-slate-200 py-4 px-4 sm:px-8 sticky bottom-0">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
             <button 
                 onClick={handlePrev} 

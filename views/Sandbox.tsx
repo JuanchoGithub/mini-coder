@@ -44,7 +44,7 @@ const Sandbox = () => {
   return (
     <div className="min-h-screen flex flex-col bg-slate-100">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between sticky top-0 z-50 shadow-sm">
+      <header className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between sticky top-0 z-50 shadow-sm gap-4 sm:gap-0">
          <div className="flex items-center gap-4">
              <Link to="/" className="p-2 text-slate-400 hover:text-primary hover:bg-indigo-50 rounded-xl transition-colors">
                  <Home size={24} />
@@ -58,13 +58,13 @@ const Sandbox = () => {
          <div className="flex bg-slate-100 p-1 rounded-xl">
              <button 
                 onClick={() => setActiveTab('code')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === 'code' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-bold text-xs sm:text-sm transition-all ${activeTab === 'code' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             >
                  <Code2 size={18}/> Código Libre
              </button>
              <button 
                 onClick={() => setActiveTab('robot')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === 'robot' ? 'bg-white text-accent shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-bold text-xs sm:text-sm transition-all ${activeTab === 'robot' ? 'bg-white text-accent shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             >
                  <Bot size={18}/> Constructor de Mundos
              </button>
@@ -72,15 +72,15 @@ const Sandbox = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 p-6 overflow-hidden flex flex-col">
+      <main className="flex-1 px-2 py-6 md:p-6 overflow-hidden flex flex-col">
           {activeTab === 'code' ? (
-              <div className="flex-1 h-full animate-fadeIn">
+              <div className="flex-1 h-full animate-fadeIn min-h-0">
                   <CodePlayground initialCode="PRINT '¡Hola Sandbox!'\nPRINT 'Aquí puedes escribir lo que quieras.'\n" />
               </div>
           ) : (
-              <div className="flex-1 flex flex-col h-full animate-fadeIn bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="flex-1 flex flex-col h-full animate-fadeIn bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-h-0">
                   {/* Robot Mode Toolbar */}
-                  <div className="bg-slate-50 border-b border-slate-200 px-4 py-3 flex justify-between items-center">
+                  <div className="bg-slate-50 border-b border-slate-200 px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0">
                       <h2 className="font-bold text-slate-700 flex items-center gap-2">
                           {robotMode === 'edit' ? <PencilRuler size={20}/> : <Play size={20}/>}
                           {robotMode === 'edit' ? 'Editando Mundo' : 'Probando Mundo'}
