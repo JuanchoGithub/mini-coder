@@ -1,18 +1,27 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import CodeEditor from './CodeEditor';
 import SidebarHelp from './SidebarHelp';
-import { executeCode } from '../services/interpreter';
-import { Play, Terminal, RotateCcw, CornerDownLeft, ZoomIn, ZoomOut, BookOpen } from 'lucide-react';
+import { executeCode, requestStop } from '../services/interpreter';
+import { Play, Terminal, RotateCcw, CornerDownLeft, ZoomIn, ZoomOut, BookOpen, Square } from 'lucide-react';
 import { ExecutionResult, OutputLine } from '../types';
 
 interface CodePlaygroundProps {
   initialCode: string;
   onRunComplete?: (result: ExecutionResult, code: string) => void;
+  // Optional props for controlled mode
+  code?: string;
+  onCodeChange?: (newCode: string) => void;
 }
 
-const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunComplete }) => {
-  const [code, setCode] = useState(initialCode);
+const CodePlayground: React.FC<CodePlaygroundProps> = (props) => {
+  const { initialCode, onRunComplete, code: controlledCode, onCodeChange } = props;
+
+  const isControlled = controlledCode !== undefined && onCodeChange !== undefined;
+
+  const [internalCode, setInternalCode] = useState(initialCode);
+  const code = isControlled ? controlledCode : internalCode;
+  const setCode = isControlled ? onCodeChange : setInternalCode;
+  
   const [output, setOutput] = useState<OutputLine[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [currentWord, setCurrentWord] = useState('');
@@ -20,24 +29,29 @@ const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunCompl
   const [isWaitingForInput, setIsWaitingForInput] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [isHelpVisible, setIsHelpVisible] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
   
-  // Reset code when initialCode changes (new lesson step)
+  // For uncontrolled mode, reset code when initialCode prop changes (e.g., new lesson step)
   useEffect(() => {
-      setCode(initialCode);
+    if (!isControlled) {
+      setInternalCode(initialCode);
       setOutput([]);
       setError(null);
       setIsWaitingForInput(false);
-  }, [initialCode]);
+    }
+  }, [initialCode, isControlled]);
 
   const toggleHelp = () => {
     setIsHelpVisible(prev => !prev);
   };
 
-  const handleRun = (inputVal?: string) => {
+  const handleRun = async (inputVal?: string) => {
     setError(null);
     if (!inputVal) setOutput([]); // Clear output on fresh run
 
-    const result: ExecutionResult = executeCode(code, inputVal);
+    setIsRunning(true);
+    const result: ExecutionResult = await executeCode(code, inputVal);
+    setIsRunning(false);
 
     if (result.error) {
       setError(result.error);
@@ -54,10 +68,15 @@ const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunCompl
       }
     }
   };
+  
+  const handleStop = () => {
+    requestStop();
+    // isRunning will be set to false when executeCode returns, which is triggered by the stop request.
+  };
 
-  const handleInputSubmit = (e: React.FormEvent) => {
+  const handleInputSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
-      handleRun(inputValue);
+      await handleRun(inputValue);
       setInputValue('');
   };
 
@@ -103,13 +122,22 @@ const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunCompl
              >
                 <BookOpen size={18} />
              </button>
-            <button
-                onClick={() => handleRun()}
-                disabled={isWaitingForInput}
-                className={`flex items-center gap-2 px-4 py-1.5 rounded-lg font-bold text-sm transition-all ${isWaitingForInput ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-primary text-white hover:bg-indigo-700 shadow-md hover:shadow-lg'}`}
-            >
-                <Play size={16} fill="currentColor" /> Ejecutar
-            </button>
+            {isRunning ? (
+                 <button
+                    onClick={handleStop}
+                    className="w-[110px] flex items-center justify-center gap-2 px-4 py-1.5 rounded-lg font-bold text-sm transition-all bg-red-500 text-white hover:bg-red-600 shadow-md hover:shadow-lg"
+                 >
+                    <Square size={16} fill="currentColor" /> Detener
+                 </button>
+            ) : (
+                <button
+                    onClick={() => handleRun()}
+                    disabled={isWaitingForInput}
+                    className={`w-[110px] flex items-center justify-center gap-2 px-4 py-1.5 rounded-lg font-bold text-sm transition-all ${isWaitingForInput ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-primary text-white hover:bg-indigo-700 shadow-md hover:shadow-lg'}`}
+                >
+                    <Play size={16} fill="currentColor" /> Ejecutar
+                </button>
+            )}
           </div>
         </div>
 
@@ -121,7 +149,7 @@ const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunCompl
                     code={code}
                     onChange={setCode}
                     onCursorWordChange={setCurrentWord}
-                    readOnly={isWaitingForInput}
+                    readOnly={isWaitingForInput || isRunning}
                     fontSize={fontSize}
                 />
               </div>

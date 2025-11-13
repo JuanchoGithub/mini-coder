@@ -23,7 +23,7 @@ const Manual = () => {
   }, [searchTerm]);
 
   const categories = useMemo(() => {
-      const cats: Record<string, ManualEntry[]> = {};
+      const cats: { [key: string]: ManualEntry[] } = {};
       filteredData.forEach(entry => {
           if (!cats[entry.category]) cats[entry.category] = [];
           cats[entry.category].push(entry);

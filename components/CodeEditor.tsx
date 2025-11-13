@@ -90,7 +90,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange, onCursorWordCha
 
   return (
     <div
-        className="relative w-full h-full font-mono overflow-hidden bg-[#f0f0f0] rounded-xl border border-slate-300 focus-within:border-primary transition-colors"
+        className={`relative w-full h-full font-mono overflow-hidden bg-[#f0f0f0] rounded-xl border border-slate-300 focus-within:border-primary transition-colors ${readOnly ? 'cursor-not-allowed' : ''}`}
         style={{ fontSize: `${fontSize}px` }}
     >
        {/* Lighter gray background for that retro feel */}
@@ -110,7 +110,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange, onCursorWordCha
         onKeyUp={handleCursorActivity}
         readOnly={readOnly}
         spellCheck="false"
-        className="absolute top-0 left-0 w-full h-full p-4 m-0 bg-transparent z-10 resize-none outline-none text-transparent caret-slate-900 leading-6 whitespace-pre font-mono"
+        className={`absolute top-0 left-0 w-full h-full p-4 m-0 bg-transparent z-10 resize-none outline-none text-transparent caret-slate-900 leading-6 whitespace-pre font-mono ${readOnly ? 'cursor-not-allowed' : ''}`}
         style={{ color: 'transparent' }}
       />
     </div>

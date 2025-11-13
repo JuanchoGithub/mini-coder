@@ -1,3 +1,4 @@
+
 import { Lesson } from '../types';
 import { lesson1 } from './lessons/lesson1';
 import { lesson2 } from './lessons/lesson2';
@@ -9,6 +10,9 @@ import { lesson7 } from './lessons/lesson7';
 import { lesson8 } from './lessons/lesson8';
 import { lesson9 } from './lessons/lesson9';
 import { lesson10 } from './lessons/lesson10';
+import { lesson11 } from './lessons/lesson11';
+import { lesson12 } from './lessons/lesson12';
+import { lesson13 } from './lessons/lesson13';
 
 export const lessons: Lesson[] = [
   lesson1,
@@ -20,5 +24,8 @@ export const lessons: Lesson[] = [
   lesson7,
   lesson8,
   lesson9,
-  lesson10
+  lesson10,
+  lesson11,
+  lesson12,
+  lesson13
 ];

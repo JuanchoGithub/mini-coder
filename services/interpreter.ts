@@ -1,8 +1,128 @@
 
+
 import { ExecutionResult, OutputLine } from '../types';
 
 // MiniQB Interpreter Engine
 // A line-by-line interpreter inspired by Microsoft QuickBASIC 4.5
+
+// --- Web Audio API Setup ---
+let audioContext: AudioContext | null = null;
+const getAudioContext = (): AudioContext => {
+    if (!audioContext) {
+        // Fallback for older browsers.
+        audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    // In some browsers, the AudioContext starts in a suspended state and must be resumed by a user gesture.
+    if (audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
+    return audioContext;
+};
+
+// --- Execution Control ---
+let stopRequested = false;
+let activeOscillators: Set<OscillatorNode> = new Set();
+
+const stopAllSounds = () => {
+    if (audioContext) {
+        activeOscillators.forEach(osc => {
+            try {
+                // Oscillator might have already stopped, so this can throw.
+                osc.stop();
+            } catch (e) {
+                // Ignore errors.
+            }
+        });
+        activeOscillators.clear();
+    }
+};
+
+export const requestStop = () => {
+    stopRequested = true;
+    stopAllSounds();
+};
+
+const interruptibleWait = async (duration: number) => {
+    const interval = 50; // Check for stop request every 50ms
+    let elapsed = 0;
+    while(elapsed < duration) {
+        if (stopRequested) {
+            break;
+        }
+        const waitTime = Math.min(interval, duration - elapsed);
+        await new Promise(r => setTimeout(r, waitTime));
+        elapsed += waitTime;
+    }
+};
+
+// Async helper to play a single tone and wait for it to finish
+const playTone = (frequency: number, duration: number, mode: 'MN' | 'ML' | 'MS' = 'MN'): Promise<void> => {
+    return new Promise(async (resolve) => {
+        if (stopRequested) {
+            return resolve();
+        }
+
+        const context = getAudioContext();
+        if (frequency <= 0 || duration <= 0) {
+            // It's a pause or invalid note, just wait for the duration interruptibly.
+            await interruptibleWait(duration);
+            return resolve();
+        }
+
+        const oscillator = context.createOscillator();
+        const gainNode = context.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(context.destination);
+
+        oscillator.type = 'sine';
+        oscillator.frequency.value = frequency;
+        
+        let playDurationFactor = 7 / 8; // MN default
+        if (mode === 'ML') playDurationFactor = 1.0; // Legato
+        if (mode === 'MS') playDurationFactor = 0.75; // Staccato
+
+        const playDuration = (duration / 1000) * playDurationFactor;
+        
+        // A simple volume envelope to prevent harsh "clicks" at the start and end of the sound.
+        gainNode.gain.setValueAtTime(0, context.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.5, context.currentTime + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.00001, context.currentTime + playDuration);
+        
+        activeOscillators.add(oscillator);
+        oscillator.onended = () => {
+            activeOscillators.delete(oscillator);
+        };
+        
+        oscillator.start(context.currentTime);
+        oscillator.stop(context.currentTime + playDuration);
+        
+        // The total time waited should be the full note duration, but interruptibly.
+        await interruptibleWait(duration);
+        activeOscillators.delete(oscillator); // Ensure it's removed
+        resolve();
+    });
+};
+
+// Note names to semitone index relative to C
+const noteSemitoneMap: Record<string, number> = {
+    'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11
+};
+
+// Note number (0-84) to frequency table
+const noteNumFrequencies: number[] = [
+    0, // Pause
+    16.35, 17.32, 18.35, 19.45, 20.6, 21.83, 23.12, 24.5, 25.96, 27.5, 29.14, 30.87, // Octave 0
+    32.7, 34.65, 36.71, 38.89, 41.2, 43.65, 46.25, 49, 51.91, 55, 58.27, 61.74,       // Octave 1
+    65.41, 69.3, 73.42, 77.78, 82.41, 87.31, 92.5, 98, 103.8, 110, 116.5, 123.5,     // Octave 2
+    130.8, 138.6, 146.8, 155.6, 164.8, 174.6, 185, 196, 207.7, 220, 233.1, 246.9,    // Octave 3
+    261.6, 277.2, 293.7, 311.1, 329.6, 349.2, 370, 392, 415.3, 440, 466.2, 493.9,    // Octave 4
+    523.3, 554.4, 587.3, 622.3, 659.3, 698.5, 740, 784, 830.6, 880, 932.3, 987.8,    // Octave 5
+    1047, 1109, 1175, 1245, 1319, 1397, 1480, 1568, 1661, 1760, 1865, 1976,           // Octave 6
+    2093, 2217, 2349, 2489, 2637, 2794, 2960, 3136, 3322, 3520, 3729, 3951            // Octave 7 (first C)
+];
+// --- End Web Audio API Setup ---
+
 
 type Variables = Record<string, any>;
 
@@ -22,6 +142,12 @@ interface InterpreterState {
   currentLineIndex: number;
   blockStack: Block[];
   operationsCount: number;
+  playState: {
+    octave: number;
+    tempo: number;
+    length: number;
+    mode: 'MN' | 'ML' | 'MS';
+  };
 }
 
 let currentState: InterpreterState = {
@@ -32,10 +158,17 @@ let currentState: InterpreterState = {
   currentLineIndex: 0,
   blockStack: [],
   operationsCount: 0,
+  playState: {
+    octave: 4,
+    tempo: 120,
+    length: 4,
+    mode: 'MN',
+  }
 };
 
 export const KEYWORDS = [
-    'PRINT', 'INPUT', 'LET', 'DIM', 'IF', 'THEN', 'ELSE', 'ELSEIF', 'END', 'FOR', 'TO', 'STEP', 'NEXT', 'DO', 'WHILE', 'UNTIL', 'LOOP', 'REM', 'CLS', 'RND'
+    'PRINT', 'INPUT', 'LET', 'DIM', 'IF', 'THEN', 'ELSE', 'ELSEIF', 'END', 'FOR', 'TO', 'STEP', 'NEXT', 'DO', 'WHILE', 'UNTIL', 'LOOP', 'REM', 'CLS', 'RND',
+    'BEEP', 'SOUND', 'PLAY'
 ];
 
 export const KEYWORD_HELP: Record<string, string> = {
@@ -53,10 +186,14 @@ export const KEYWORD_HELP: Record<string, string> = {
   'LOOP': 'Marca el final de un bucle DO y vuelve al principio.',
   'REM': 'Marca una línea como comentario (ignorado por la computadora). También puedes usar \'.',
   'CLS': 'Limpia la pantalla de salida.',
-  'RND': 'Genera un número aleatorio. Ejemplo: dado = RND(6) te da un número del 1 al 6.'
+  'RND': 'Genera un número aleatorio. Ejemplo: dado = RND(6) te da un número del 1 al 6.',
+  'BEEP': 'Produce un sonido corto y simple. Como el pitido de una computadora vieja. Ejemplo: BEEP',
+  'SOUND': 'Toca una nota con una frecuencia (Hz) y duración (ticks) específicas. Aprox. 18.2 ticks por segundo. Ejemplo: SOUND 440, 9 (toca La por ~medio segundo)',
+  'PLAY': 'Toca una melodía compleja escrita como texto. Ejemplo: PLAY "T180 O5 L8 C G E G"',
+  'DIM': 'Declara un arreglo (una lista de variables) con un tamaño fijo. Ejemplo: DIM mi_lista(10)',
 };
 
-const resetState = () => {
+export const resetState = () => {
   currentState = {
     variables: {},
     output: [],
@@ -64,8 +201,16 @@ const resetState = () => {
     inputTargetVariable: null,
     currentLineIndex: 0,
     blockStack: [],
-    operationsCount: 0
+    operationsCount: 0,
+    playState: {
+        octave: 4,
+        tempo: 120,
+        length: 4,
+        mode: 'MN',
+    }
   };
+  stopRequested = false;
+  stopAllSounds();
 };
 
 // Helper to escape regex characters in variable names (like $)
@@ -78,58 +223,76 @@ const evaluateExpression = (expr: string, vars: Variables): any => {
     let evalStr = expr.trim();
     if (evalStr === '') return '';
 
-    // 0. Handle RND() function first before variable substitution
+    // 1. Handle RND() function first before any other substitution
     evalStr = evalStr.replace(/\bRND\s*\(\s*([^)]+)\s*\)/gi, (match, p1) => {
         const max = parseInt(evaluateExpression(p1, vars));
-        // The callback for String.prototype.replace must return a string.
         if (isNaN(max) || max <= 0) return '1';
         return String(Math.floor(Math.random() * max) + 1);
     });
-
-    // 1. Protect string literals temporarily
-    const stringLiterals: string[] = [];
-    evalStr = evalStr.replace(/"([^"]*)"/g, (match, p1) => {
-        stringLiterals.push(p1);
-        return `__STR_${stringLiterals.length - 1}__`;
-    });
-
-    // 2. Substitute variables
-    // Sort keys by length desc to avoid partial matches (e.g., replacing 'a' in 'apple')
+    
+    // 2. Substitute variables (including array access) with their values.
+    // This is done BEFORE transpiling operators.
     const varNames = Object.keys(vars).sort((a, b) => b.length - a.length);
+
     for (const varName of varNames) {
-        const val = vars[varName];
-        let safeVal;
-        if (typeof val === 'string') {
-             safeVal = `"${val.replace(/"/g, '\\"')}"`;
-        } else {
-             safeVal = val;
+        const varValue = vars[varName];
+        const escapedVarName = escapeRegExp(varName);
+
+        // A. Handle array access first: var(index)
+        if (Array.isArray(varValue)) {
+            // FIX: Use word boundary only if varName does not end in a sigil.
+            const arrayAccessRegex = /[\$%\!#]$/.test(varName)
+                ? new RegExp(`${escapedVarName}\\s*\\(([^)]+)\\)`, 'gi')
+                : new RegExp(`\\b${escapedVarName}\\s*\\(([^)]+)\\)`, 'gi');
+
+            evalStr = evalStr.replace(arrayAccessRegex, (match, indexExpr) => {
+                try {
+                    const index = Math.floor(Number(evaluateExpression(indexExpr, vars)));
+                    if (isNaN(index)) throw new Error(`Índice inválido para el arreglo "${varName}".`);
+                    if (index < 1 || index >= varValue.length) throw new Error(`Índice fuera de rango: ${index} para el arreglo "${varName}".`);
+                    
+                    const value = varValue[index];
+                    // If the value from the array is a string, wrap it in quotes to make it a JS literal
+                    if (typeof value === 'string') {
+                        return `"${String(value).replace(/"/g, '\\"')}"`;
+                    }
+                    return String(value);
+                } catch (e: any) {
+                    if (e.message.startsWith('Índice')) throw e;
+                    // If index evaluation fails, it might be a different function. Leave it untouched.
+                    return match;
+                }
+            });
         }
-        
-        // More precise variable replacement to avoid replacing substrings in keywords or other vars incorrectly
-        // if it has a special suffix, we might not get word boundaries standardly, so we handle it.
-        if (/[\$%\!#]$/.test(varName)) {
-             const regexSigil = new RegExp(escapeRegExp(varName), 'gi');
-             evalStr = evalStr.replace(regexSigil, String(safeVal));
-        } else {
-             const regex = new RegExp(`\\b${escapeRegExp(varName)}\\b`, 'gi');
-             evalStr = evalStr.replace(regex, String(safeVal));
+        // B. Handle simple variable substitution: var
+        else {
+            const regex = /[\$%\!#]$/.test(varName)
+                ? new RegExp(escapedVarName, 'gi') // Sigil variables don't need word boundaries
+                : new RegExp(`\\b${escapedVarName}\\b`, 'gi');
+
+            // Use a replacer function to prevent special replacement patterns (like $&, $', etc.)
+            // in the variable's value from being interpreted by the replace method. This is safer.
+            evalStr = evalStr.replace(regex, () => {
+                 if (typeof varValue === 'string') {
+                    // Convert the variable's string content into a valid JS string literal
+                    return `"${String(varValue).replace(/"/g, '\\"')}"`;
+                }
+                return String(varValue);
+            });
         }
     }
 
-    // 3. Restore string literals
-    evalStr = evalStr.replace(/__STR_(\d+)__/g, (match, p1) => {
-        return `"${stringLiterals[parseInt(p1)].replace(/"/g, '\\"')}"`;
-    });
-
-    // 4. Transpile QB operators to JS operators
-    // IMPORTANT: Order matters to avoid breaking <= >= into < ===
-    evalStr = evalStr.replace(/<>/g, '!==')
-                     .replace(/<=/g, '__LTE__')
+    // 3. Transpile QB operators to JS operators
+    // Use placeholders for multi-character operators to avoid corruption by the single '=' replacement.
+    evalStr = evalStr.replace(/<=/g, '__LTE__')
                      .replace(/>=/g, '__GTE__')
+                     .replace(/<>/g, '__NEQ__')
                      // Replace single = with === for comparison (assignment is handled before this func in LET)
-                     .replace(/=/g, '===') 
+                     .replace(/=/g, '===')
+                     // Restore placeholder operators to their JS equivalents
                      .replace(/__LTE__/g, '<=')
                      .replace(/__GTE__/g, '>=')
+                     .replace(/__NEQ__/g, '!==')
                      .replace(/\bAND\b/gi, '&&')
                      .replace(/\bOR\b/gi, '||')
                      .replace(/\bNOT\b/gi, '!')
@@ -140,7 +303,6 @@ const evaluateExpression = (expr: string, vars: Variables): any => {
         // eslint-disable-next-line no-new-func
         const result = Function(`"use strict"; return (${evalStr})`)();
 
-        // FIX: Detect NaN result, which indicates an invalid math operation on a string, and treat it as a type error.
         if (typeof result === 'number' && isNaN(result)) {
             throw new Error(`Error de tipo: No se puede realizar una operación matemática con texto.`);
         }
@@ -153,7 +315,7 @@ const evaluateExpression = (expr: string, vars: Variables): any => {
         return result;
     } catch (e: any) {
         // If it's our custom error, let it pass through.
-        if (e.message.startsWith('Error de tipo')) {
+        if (e.message.startsWith('Error de tipo') || e.message.startsWith('Índice')) {
             throw e;
         }
         // Otherwise, it's a real syntax error from the Function() constructor.
@@ -219,8 +381,9 @@ const findElseOrEndIf = (lines: string[], startIndex: number): number => {
     return lines.length;
 };
 
-export const executeCode = (code: string, inputVal?: string): ExecutionResult => {
-  if (!currentState.waitingForInput) {
+export const executeCode = async (code: string, inputVal?: string): Promise<ExecutionResult> => {
+  // A new run (not from an INPUT prompt) must reset the entire state.
+  if (inputVal === undefined) {
     resetState();
   } else if (inputVal !== undefined && currentState.inputTargetVariable) {
     // Handle Input
@@ -239,6 +402,10 @@ export const executeCode = (code: string, inputVal?: string): ExecutionResult =>
   const MAX_OPERATIONS = 100000; // Increased safety limit
 
   while (currentState.currentLineIndex < lines.length) {
+    if (stopRequested) {
+        return { output: currentState.output, error: "Ejecución detenida por el usuario." };
+    }
+      
     if (currentState.operationsCount++ > MAX_OPERATIONS) {
         return { output: currentState.output, error: "Tiempo de ejecución excedido. ¿Posible bucle infinito?" };
     }
@@ -288,22 +455,33 @@ export const executeCode = (code: string, inputVal?: string): ExecutionResult =>
 
       // --- INPUT ---
       } else if (upperLine.startsWith('INPUT ')) {
-        // FORMATS: INPUT var   OR   INPUT "Prompt", var   OR   INPUT "Prompt"; var
-        let varName = '';
-        let prompt = '';
+        // FORMATS: INPUT var   OR   INPUT promptExpr, var
+        let varName: string;
+        let promptExpr: string | null = null;
         
-        const firstQuote = rawLine.indexOf('"');
-        const lastQuote = rawLine.lastIndexOf('"');
-        
-        if (firstQuote > -1 && lastQuote > firstQuote) {
-             prompt = rawLine.substring(firstQuote + 1, lastQuote);
-             // Find variable after the prompt
-             const rest = rawLine.substring(lastQuote + 1).trim();
-             // remove potential ; or , separators
-             varName = rest.replace(/^[;,]\s*/, '').trim();
-             currentState.output.push({ type: 'prompt', value: prompt }); // Print prompt immediately
+        // Find the last comma or semicolon to separate the prompt from the variable.
+        const lastComma = rawLine.lastIndexOf(',');
+        const lastSemicolon = rawLine.lastIndexOf(';');
+        const separatorPos = Math.max(lastComma, lastSemicolon);
+
+        // A separator must exist after the INPUT keyword to indicate a prompt is present.
+        if (separatorPos > 5) {
+             promptExpr = rawLine.substring(5, separatorPos).trim();
+             varName = rawLine.substring(separatorPos + 1).trim();
         } else {
-             varName = rawLine.substring(6).trim();
+             // No prompt, just the variable.
+             varName = rawLine.substring(5).trim();
+        }
+
+        if (!varName) {
+            throw new Error("Sintaxis de INPUT inválida. Falta la variable.");
+        }
+        
+        // If there's a prompt expression, evaluate it. Otherwise, use the default prompt.
+        if (promptExpr) {
+             const promptValue = evaluateExpression(promptExpr, currentState.variables);
+             currentState.output.push({ type: 'prompt', value: String(promptValue) });
+        } else {
              currentState.output.push({ type: 'prompt', value: "? " }); // Standard QB generic prompt
         }
 
@@ -320,10 +498,30 @@ export const executeCode = (code: string, inputVal?: string): ExecutionResult =>
           const equalPos = assignStr.indexOf('=');
           if (equalPos === -1) throw new Error("Asignación inválida");
           
-          const varName = assignStr.substring(0, equalPos).trim();
-          const expr = assignStr.substring(equalPos + 1).trim();
+          const leftSide = assignStr.substring(0, equalPos).trim();
+          const rightSideExpr = assignStr.substring(equalPos + 1).trim();
+          const value = evaluateExpression(rightSideExpr, currentState.variables);
+
+          const arrayAccessMatch = leftSide.match(/^([a-zA-Z_][\w]*[$%#&!]?)\s*\((.+)\)$/);
           
-          currentState.variables[varName] = evaluateExpression(expr, currentState.variables);
+          if (arrayAccessMatch) {
+              const arrayName = arrayAccessMatch[1];
+              const indexExpr = arrayAccessMatch[2];
+              const index = Math.floor(Number(evaluateExpression(indexExpr, currentState.variables)));
+              
+              if (isNaN(index)) throw new Error(`Índice inválido para el arreglo "${arrayName}".`);
+              
+              if (!Array.isArray(currentState.variables[arrayName])) {
+                  throw new Error(`La variable "${arrayName}" no es un arreglo. Usa DIM para declararla.`);
+              }
+              if (index < 1 || index >= currentState.variables[arrayName].length) {
+                  throw new Error(`Índice fuera de rango: ${index} para el arreglo "${arrayName}".`);
+              }
+              currentState.variables[arrayName][index] = value;
+          } else {
+              const varName = leftSide;
+              currentState.variables[varName] = value;
+          }
 
       // --- IF ... THEN ... ---
       } else if (upperLine.startsWith('IF ')) {
@@ -401,15 +599,20 @@ export const executeCode = (code: string, inputVal?: string): ExecutionResult =>
           
       // --- DO WHILE ... ---
       } else if (upperLine.startsWith('DO WHILE ')) {
-          const conditionStr = rawLine.substring(9).trim();
-          const condition = evaluateCondition(conditionStr, currentState.variables);
-          
-          if (condition) {
-              currentState.blockStack.push({ type: 'DO', line: i, meta: conditionStr });
+          const currentBlock = currentState.blockStack[currentState.blockStack.length - 1];
+          if (currentBlock && currentBlock.type === 'DO' && currentBlock.line === i) {
+              // Re-entry from a LOOP statement, just continue into the body.
           } else {
-              const loopEnd = findMatchingEnd(lines, i, 'DO');
-              currentState.currentLineIndex = loopEnd;
-              continue;
+            const conditionStr = rawLine.substring(9).trim();
+            const condition = evaluateCondition(conditionStr, currentState.variables);
+            
+            if (condition) {
+                currentState.blockStack.push({ type: 'DO', line: i, meta: conditionStr });
+            } else {
+                const loopEnd = findMatchingEnd(lines, i, 'DO');
+                currentState.currentLineIndex = loopEnd;
+                continue;
+            }
           }
 
       // --- LOOP ---
@@ -420,7 +623,7 @@ export const executeCode = (code: string, inputVal?: string): ExecutionResult =>
                const condition = evaluateCondition(block.meta, currentState.variables);
                if (condition) {
                    currentState.currentLineIndex = block.line; // Jump back to DO
-                   // We don't increment at the bottom of the loop
+                   continue;
                } else {
                    currentState.blockStack.pop(); // Loop finished
                }
@@ -496,6 +699,140 @@ export const executeCode = (code: string, inputVal?: string): ExecutionResult =>
       } else if (upperLine === 'CLS') {
           currentState.output = [];
 
+      // --- BEEP ---
+      } else if (upperLine === 'BEEP') {
+        // BEEP is a quick sound, so we don't need to wait for it.
+        // This is a "fire-and-forget" sound.
+        playTone(880, 150).catch(console.error);
+      
+      // --- SOUND freq, duration ---
+      } else if (upperLine.startsWith('SOUND ')) {
+        const argsStr = rawLine.substring(6).trim();
+        const args = argsStr.split(',');
+        if (args.length !== 2) throw new Error("SOUND necesita dos argumentos: frecuencia, duración");
+        
+        const freq = evaluateExpression(args[0].trim(), currentState.variables);
+        const durationInTicks = evaluateExpression(args[1].trim(), currentState.variables);
+
+        if (typeof freq !== 'number' || typeof durationInTicks !== 'number') {
+            throw new Error("Los argumentos de SOUND deben ser números.");
+        }
+        
+        // Convert duration from clock ticks to milliseconds. 18.2 ticks per second.
+        const durationInMs = durationInTicks * (1000 / 18.2);
+
+        await playTone(freq, durationInMs, 'MN');
+      
+      // --- PLAY "C D E" ---
+      } else if (upperLine.startsWith('PLAY ')) {
+        const melodyStr = evaluateExpression(rawLine.substring(5).trim(), currentState.variables);
+        if (typeof melodyStr !== 'string') {
+            throw new Error("El argumento de PLAY debe ser texto (entre comillas).");
+        }
+        
+        // Use the persistent playState from currentState
+        const { playState } = currentState;
+
+        const tokens = melodyStr.toUpperCase().match(/(O\d+|<|>|L\d+\.*|T\d+|P\d+\.*|N\d+\.*|ML|MN|MS|[A-G][#\+\-]?\d*\.*)/gi) || [];
+
+        for (const token of tokens) {
+            if (stopRequested) break;
+
+            const command = token[0];
+            let valueStr = token.substring(1);
+
+            if (command === 'T') {
+                const tempo = parseInt(valueStr);
+                if (tempo >= 32 && tempo <= 255) playState.tempo = tempo;
+            } else if (command === 'O') {
+                const octave = parseInt(valueStr);
+                if (octave >= 0 && octave <= 6) playState.octave = octave;
+            } else if (command === '<') {
+                playState.octave = Math.max(0, playState.octave - 1);
+            } else if (command === '>') {
+                playState.octave = Math.min(6, playState.octave + 1);
+            } else if (command === 'L') {
+                playState.length = parseInt(valueStr) || 4;
+            } else if (command === 'M') {
+                if (valueStr === 'N') playState.mode = 'MN';
+                if (valueStr === 'L') playState.mode = 'ML';
+                if (valueStr === 'S') playState.mode = 'MS';
+            } else if (command === 'P') { // PAUSE
+                let length = parseInt(valueStr) || playState.length;
+                const quarterNoteDuration = 60000 / playState.tempo;
+                let duration = (quarterNoteDuration * 4) / length;
+
+                const dots = (valueStr.match(/\./g) || []).length;
+                let tempDuration = duration;
+                for (let d = 0; d < dots; d++) {
+                    tempDuration /= 2;
+                    duration += tempDuration;
+                }
+                
+                await playTone(0, duration, playState.mode);
+
+            } else if (command === 'N') { // NOTE NUMBER
+                const noteNum = parseInt(valueStr);
+                
+                const quarterNoteDuration = 60000 / playState.tempo;
+                let duration = (quarterNoteDuration * 4) / playState.length;
+
+                const dots = (valueStr.match(/\./g) || []).length;
+                let tempDuration = duration;
+                for (let d = 0; d < dots; d++) {
+                    tempDuration /= 2;
+                    duration += tempDuration;
+                }
+
+                let freq = 0;
+                if (noteNum > 0 && noteNum < noteNumFrequencies.length) {
+                    freq = noteNumFrequencies[noteNum];
+                }
+                
+                await playTone(freq, duration, playState.mode);
+
+            } else if (command >= 'A' && command <= 'G') {
+                const noteMatch = token.match(/([A-G])([#\+\-]?)(\d*)(\.*)/);
+                if (!noteMatch) continue;
+
+                let [, noteName, accidental, lengthStr, dotsStr] = noteMatch;
+                
+                let length = parseInt(lengthStr) || playState.length;
+                if (length === 0) length = 4;
+
+                let semitone = noteSemitoneMap[noteName];
+                let currentOctave = playState.octave;
+
+                if (accidental === '#' || accidental === '+') semitone++;
+                if (accidental === '-') semitone--;
+
+                if (semitone < 0) {
+                    semitone += 12;
+                    currentOctave--;
+                }
+                if (semitone > 11) {
+                    semitone -= 12;
+                    currentOctave++;
+                }
+                if (currentOctave < 0 || currentOctave > 6) continue;
+
+                const noteNum = (currentOctave * 12) + semitone + 12; // MIDI note number approx
+                const freq = noteNumFrequencies[noteNum + 1] || 0;
+                
+                const quarterNoteDuration = 60000 / playState.tempo;
+                let duration = (quarterNoteDuration * 4) / length;
+
+                const dots = dotsStr.length;
+                let tempDuration = duration;
+                for (let d = 0; d < dots; d++) {
+                    tempDuration /= 2;
+                    duration += tempDuration;
+                }
+                
+                await playTone(freq, duration, playState.mode);
+            }
+        }
+
       } else if (upperLine.startsWith('END')) {
           if (upperLine === 'END') {
               return { output: currentState.output, isWaitingForInput: false };
@@ -504,7 +841,20 @@ export const executeCode = (code: string, inputVal?: string): ExecutionResult =>
           // END IF handled above.
 
       } else if (upperLine.startsWith('DIM ')) {
-           // Ignore DIM for now in this simple interpreter, variables are auto-created.
+           const dimStr = rawLine.substring(4).trim();
+           // Regex to capture varName(size)
+           const match = dimStr.match(/^([a-zA-Z_][\w]*[$%#&!]?)\s*\(\s*(\d+)\s*\)$/);
+           if (!match) throw new Error("Sintaxis de DIM incorrecta. Ejemplo: DIM mi_array(10)");
+   
+           const varName = match[1];
+           const size = parseInt(match[2], 10);
+           if (size <= 0) throw new Error("El tamaño del arreglo debe ser mayor que cero.");
+           
+           // BASIC is often 1-indexed, so we create size+1 and ignore index 0.
+           const isStringArray = varName.endsWith('$');
+           const defaultValue = isStringArray ? "" : 0;
+           currentState.variables[varName] = new Array(size + 1).fill(defaultValue);
+
       } else {
            throw new Error(`Comando desconocido: "${rawLine.split(' ')[0]}"`);
       }

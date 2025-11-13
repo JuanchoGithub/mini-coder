@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { lessons } from '../data/lessons';
 import { logicScenarios } from '../data/logicScenarios';
@@ -8,7 +8,7 @@ import ReactMarkdown from 'react-markdown';
 import CodePlayground from '../components/CodePlayground';
 import LogicSimulator from '../components/LogicSimulator';
 import RobotSimulator2D from '../components/RobotSimulator2D';
-import { ChevronLeft, ChevronRight, CheckCircle, Home, ClipboardCopy, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle, Home, ClipboardCopy, Check, ShieldAlert } from 'lucide-react';
 import { ExecutionResult } from '../types';
 
 const LessonWizard = () => {
@@ -19,6 +19,33 @@ const LessonWizard = () => {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [exerciseCompleted, setExerciseCompleted] = useState(false);
   const [exerciseHint, setExerciseHint] = useState<string | null>(null);
+  const [isAdminMode, setIsAdminMode] = useState(false);
+
+  // Admin mode activation via key sequence
+  useEffect(() => {
+    let sequence = '';
+    const targetSequence = '3127';
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.metaKey || e.ctrlKey || e.altKey) return;
+        
+        sequence += e.key;
+        if (sequence.length > targetSequence.length) {
+            sequence = sequence.substring(sequence.length - targetSequence.length);
+        }
+        if (sequence === targetSequence) {
+            setIsAdminMode(prev => {
+                const newMode = !prev;
+                console.log(`Modo Admin ${newMode ? 'activado' : 'desactivado'}.`);
+                return newMode;
+            });
+        }
+    };
+    
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []); // Run only on mount
 
   if (!lesson) return <div className="p-8 text-center text-2xl font-bold text-slate-400">Lección no encontrada 😔</div>;
 
@@ -152,6 +179,9 @@ const LessonWizard = () => {
     );
   };
 
+  const isExerciseStep = (currentStep.type === 'code' || currentStep.type.includes('simulation') || (currentStep.type === 'exercise' && currentStep.exercise?.expectedOutput === 'DONE'));
+  const isStepLocked = isExerciseStep && !exerciseCompleted;
+
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
@@ -275,11 +305,18 @@ const LessonWizard = () => {
                 <ChevronLeft size={20} /> Anterior
             </button>
 
+            {isAdminMode && (
+              <div className="flex items-center gap-2 text-xs font-bold text-amber-600 bg-amber-100 px-3 py-1.5 rounded-full animate-pulse">
+                <ShieldAlert size={14} />
+                MODO ADMIN
+              </div>
+            )}
+
             <button 
                 onClick={handleNext}
-                disabled={(currentStep.type === 'code' || currentStep.type.includes('simulation') || (currentStep.type === 'exercise' && currentStep.exercise?.expectedOutput === 'DONE')) && !exerciseCompleted}
+                disabled={!isAdminMode && isStepLocked}
                 className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white shadow-md transition-all transform hover:-translate-y-1 ${
-                    ((currentStep.type === 'code' || currentStep.type.includes('simulation') || currentStep.exercise?.expectedOutput === 'DONE') && !exerciseCompleted)
+                    (!isAdminMode && isStepLocked)
                     ? 'bg-slate-400 cursor-not-allowed opacity-70' 
                     : 'bg-primary hover:bg-indigo-700 hover:shadow-lg'
                 }`}

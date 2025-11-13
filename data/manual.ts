@@ -1,7 +1,8 @@
+
 export interface ManualEntry {
   id: string;
   title: string;
-  category: 'Conceptos' | 'Entrada/Salida' | 'Decisiones' | 'Bucles' | 'Funciones';
+  category: 'Conceptos' | 'Entrada/Salida' | 'Decisiones' | 'Bucles' | 'Funciones' | 'Sonido' | 'Arreglos';
   description: string;
   syntax?: string;
   example: string;
@@ -103,6 +104,33 @@ DO WHILE respuesta <> secreto
 LOOP
 PRINT "¡Correcto! Era el " + secreto`
   },
+   {
+    id: 'dim',
+    title: 'DIM (Arreglos)',
+    category: 'Arreglos',
+    description: '`DIM` (dimensión) se usa para declarar un "arreglo", que es como una lista o un casillero con múltiples compartimentos numerados. En lugar de tener variables separadas como `item1`, `item2`, `item3`, puedes tener un solo arreglo llamado `item` y acceder a sus elementos con un índice: `item(1)`, `item(2)`, etc. Los índices en MiniQB empiezan en 1.',
+    syntax: 'DIM nombre_arreglo(tamaño)',
+    example: `' Declara un arreglo para 5 puntajes
+DIM puntajes(5)
+
+' Asigna valores a algunos elementos
+puntajes(1) = 150
+puntajes(2) = 220
+puntajes(5) = 180
+
+PRINT "El primer puntaje es: " + puntajes(1)
+PRINT "El último puntaje es: " + puntajes(5)
+
+' Los arreglos son poderosos con bucles FOR
+DIM nombres$(3)
+nombres$(1) = "Ana"
+nombres$(2) = "Luis"
+nombres$(3) = "Eva"
+
+FOR i = 1 TO 3
+    PRINT "Bienvenido/a, " + nombres$(i)
+NEXT i`
+  },
   {
     id: 'rnd',
     title: 'RND',
@@ -120,6 +148,58 @@ IF moneda = 1 THEN
 ELSE
   PRINT "Cruz"
 END IF`
+  },
+  {
+    id: 'beep',
+    title: 'BEEP',
+    category: 'Sonido',
+    description: 'Produce un sonido corto y simple, como un pitido de sistema. Útil para dar feedback al usuario, como en un error o al completar una acción.',
+    syntax: 'BEEP',
+    example: `' Este programa emite un sonido
+PRINT "Escucha..."
+BEEP
+PRINT "¡Sonó!"`
+  },
+  {
+    id: 'sound',
+    title: 'SOUND',
+    category: 'Sonido',
+    description: 'A diferencia de BEEP, produce un sonido con una frecuencia y duración variables. La frecuencia se mide en Hertz (rango de 37 a 32767). La duración se mide en "ticks" de reloj, donde aproximadamente 18.2 ticks equivalen a un segundo.',
+    syntax: 'SOUND frecuencia, duracion',
+    example: `' Toca la nota LA (440 Hz) durante medio segundo (aprox. 9 ticks)
+PRINT "Tocando nota LA..."
+SOUND 440, 9
+
+' Toca una nota más grave (DO) por un segundo (aprox. 18 ticks)
+PRINT "Tocando nota DO..."
+SOUND 261, 18`
+  },
+  {
+    id: 'play',
+    title: 'PLAY (Avanzado)',
+    category: 'Sonido',
+    description: 'Usa `PLAY` para tocar melodías y partituras complejas. `PLAY` interpreta una cadena de texto que contiene notas y comandos especiales. Los tonos se indican con las letras de la A a la G. Las alteraciones (sostenidos/bemoles) se indican con `+` o `#` (sostenido) o `-` (bemol) justo después de la nota. Los espacios en blanco se ignoran. Los comandos cambian las propiedades de todas las notas que les siguen.',
+    syntax: `PLAY "cadena_de_comandos_y_notas"
+
+**Comandos Principales:**
+- **Notas:** \`A, B, C, D, E, F, G\`. Pueden llevar \`#\` o \`+\` (sostenido) y \`-\` (bemol). Ej: \`C#\`, \`G+\`, \`A-\`
+- **Ln:** Fija la duración de las notas (L1: redonda, L2: blanca, L4: negra, L8: corchea, etc.). Por defecto L4.
+- **On:** Fija la octava actual (0-6). Por defecto O4.
+- **< >:** Sube o baja una octava.
+- **Tn:** Fija el tempo (velocidad) en negras por minuto (32-255). Por defecto T120.
+- **Pn:** Pausa con una duración \`n\` (igual que L).
+- **.** (punto): Puesto después de una nota, la hace durar 1.5 veces más (nota con puntillo).
+- **MN, ML, MS:** Fija el estilo. MN (Normal, 7/8), ML (Legato, duración completa), MS (Staccato, 3/4). Por defecto MN.
+- **Nn:** Toca una nota específica por su número MIDI (0-84, 0 es pausa).
+
+**Notación Rápida:** Puedes especificar la duración de una nota directamente con un número. Ej: \`C8\` es lo mismo que \`L8 C\`.`,
+    example: `' Toca "Estrellita Dónde Estás" con tempo y octavas
+' T180 = Tempo Rápido, O4 = Octava 4
+PLAY "T180 O4 L8 C C G G A A G4 F F E E D D C4"
+
+' Una escala cromática subiendo y bajando
+PLAY "L16 O3 C C# D D# E F F# G G# A A# B > C < B A# A G# G F# F E D# D C# C"
+`
   },
   {
     id: 'cls',
