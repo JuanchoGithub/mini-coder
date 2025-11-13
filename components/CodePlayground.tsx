@@ -76,7 +76,7 @@ const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunCompl
                     <div className="w-3 h-3 rounded-full bg-amber-400"></div>
                     <div className="w-3 h-3 rounded-full bg-green-400"></div>
                 </div>
-                <span className="ml-3 text-sm font-medium text-slate-600">Editor MiniCode</span>
+                <span className="ml-3 text-sm font-medium text-slate-600 hidden sm:inline">Editor MiniCode</span>
                 <div className="flex items-center gap-1 ml-2 border-l border-slate-300 pl-3">
                     <button onClick={handleDecreaseFontSize} className="p-1 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded-md transition-colors" title="Reducir tamaño de letra">
                         <ZoomOut size={16} />

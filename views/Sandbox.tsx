@@ -83,7 +83,7 @@ const Sandbox = () => {
                   <div className="bg-slate-50 border-b border-slate-200 px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0">
                       <h2 className="font-bold text-slate-700 flex items-center gap-2">
                           {robotMode === 'edit' ? <PencilRuler size={20}/> : <Play size={20}/>}
-                          {robotMode === 'edit' ? 'Editando Mundo' : 'Probando Mundo'}
+                          <span className="hidden sm:inline">{robotMode === 'edit' ? 'Editando Mundo' : 'Probando Mundo'}</span>
                       </h2>
                       <button 
                         onClick={() => setRobotMode(prev => prev === 'edit' ? 'play' : 'edit')}
