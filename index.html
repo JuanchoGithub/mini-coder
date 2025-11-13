@@ -5,6 +5,12 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MiniCoder - Aprende a Programar</title>
+    
+    <!-- PWA Enhancements -->
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#4f46e5"/>
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.svg">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -119,5 +125,16 @@
   <body class="bg-slate-50 text-slate-900 font-sans">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then(registration => {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+          }).catch(err => {
+            console.log('ServiceWorker registration failed: ', err);
+          });
+        });
+      }
+    </script>
   </body>
 </html>
