@@ -28,7 +28,7 @@ const SidebarHelp: React.FC<SidebarHelpProps> = ({ currentWord }) => {
   const finalEntry = helpEntry || (secondaryMap[normalizedWord] ? manualData.find(e => e.id === secondaryMap[normalizedWord]) : null);
 
   return (
-    <div className="h-full bg-[#e8e8e8] border-l border-slate-300 p-4 flex flex-col font-mono">
+    <div className="h-full bg-[#e8e8e8] p-4 flex flex-col font-mono">
       <div className="flex items-center gap-2 mb-4 text-blue-800 font-bold uppercase tracking-wider text-sm border-b border-blue-800 pb-2">
         <BookOpen size={18} />
         <span>Ayuda Rápida</span>

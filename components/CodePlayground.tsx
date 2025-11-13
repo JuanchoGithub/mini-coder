@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import CodeEditor from './CodeEditor';
 import SidebarHelp from './SidebarHelp';
 import { executeCode } from '../services/interpreter';
-import { Play, Terminal, RotateCcw, CornerDownLeft, ZoomIn, ZoomOut } from 'lucide-react';
+import { Play, Terminal, RotateCcw, CornerDownLeft, ZoomIn, ZoomOut, BookOpen } from 'lucide-react';
 import { ExecutionResult, OutputLine } from '../types';
 
 interface CodePlaygroundProps {
@@ -19,6 +19,7 @@ const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunCompl
   const [fontSize, setFontSize] = useState(14); // Default font size
   const [isWaitingForInput, setIsWaitingForInput] = useState(false);
   const [inputValue, setInputValue] = useState('');
+  const [isHelpVisible, setIsHelpVisible] = useState(false);
   
   // Reset code when initialCode changes (new lesson step)
   useEffect(() => {
@@ -27,6 +28,10 @@ const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunCompl
       setError(null);
       setIsWaitingForInput(false);
   }, [initialCode]);
+
+  const toggleHelp = () => {
+    setIsHelpVisible(prev => !prev);
+  };
 
   const handleRun = (inputVal?: string) => {
     setError(null);
@@ -66,8 +71,8 @@ const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunCompl
 
   return (
     <div className="flex h-full border border-slate-200 rounded-2xl overflow-hidden shadow-sm bg-white">
-      {/* Main Area */}
-      <div className="flex-1 flex flex-col">
+      {/* Main Area (Editor + Console + Mobile Help) */}
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Toolbar */}
         <div className="bg-slate-50 border-b border-slate-200 px-4 py-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -90,6 +95,14 @@ const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunCompl
              <button onClick={() => { setCode(initialCode); setOutput([]); setError(null); setIsWaitingForInput(false); }} className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded-lg transition-colors" title="Reiniciar Código">
                  <RotateCcw size={18} />
              </button>
+             <button 
+                onClick={toggleHelp}
+                className={`p-2 rounded-lg transition-colors ${isHelpVisible ? 'bg-indigo-100 text-primary' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200'}`}
+                title="Ayuda Rápida"
+                aria-pressed={isHelpVisible}
+             >
+                <BookOpen size={18} />
+             </button>
             <button
                 onClick={() => handleRun()}
                 disabled={isWaitingForInput}
@@ -102,15 +115,24 @@ const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunCompl
 
         {/* Editor & Output Split */}
         <div className="flex-1 flex flex-col md:flex-row min-h-0">
-          <div className="flex-1 relative min-h-[200px]">
-            <CodeEditor
-                code={code}
-                onChange={setCode}
-                onCursorWordChange={setCurrentWord}
-                readOnly={isWaitingForInput}
-                fontSize={fontSize}
-            />
-          </div>
+            <div className="flex-1 flex flex-col min-h-0">
+              <div className="flex-1 relative min-h-[200px]">
+                <CodeEditor
+                    code={code}
+                    onChange={setCode}
+                    onCursorWordChange={setCurrentWord}
+                    readOnly={isWaitingForInput}
+                    fontSize={fontSize}
+                />
+              </div>
+    
+              {isHelpVisible && (
+                <div className="lg:hidden h-72 border-t border-slate-200">
+                  <SidebarHelp currentWord={currentWord} />
+                </div>
+              )}
+            </div>
+
 
           {/* Output Terminal */}
           <div className="h-64 md:h-auto md:w-2/5 bg-slate-900 text-slate-100 p-4 font-mono text-sm overflow-y-auto flex flex-col">
@@ -143,10 +165,12 @@ const CodePlayground: React.FC<CodePlaygroundProps> = ({ initialCode, onRunCompl
         </div>
       </div>
 
-      {/* Sidebar */}
-      <div className="w-64 hidden lg:block">
-        <SidebarHelp currentWord={currentWord} />
-      </div>
+      {/* Desktop Sidebar */}
+      {isHelpVisible && (
+        <div className="w-64 hidden lg:block flex-shrink-0 border-l border-slate-200">
+          <SidebarHelp currentWord={currentWord} />
+        </div>
+      )}
     </div>
   );
 };
