@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { lessons } from '../data/lessons';
-import { Rocket, Code2, BookOpen, Star, Box, ChevronRight } from 'lucide-react';
+import { Rocket, Code2, BookOpen, Star, Box, ChevronRight, Play } from 'lucide-react';
 
 const Home = () => {
   return (
@@ -43,23 +43,33 @@ const Home = () => {
             <BookOpen className="text-primary"/> Tu camino de aprendizaje
         </h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {lessons.map((lesson) => (
-            <Link to={`/lesson/${lesson.id}`} key={lesson.id} className="group">
-              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-300 h-full flex flex-col transform hover:-translate-y-1">
-                <div className="flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 bg-indigo-100 text-primary rounded-xl flex items-center justify-center font-bold text-xl group-hover:bg-primary group-hover:text-white transition-colors">
-                    {lesson.id}
-                    </div>
-                    {lesson.id <= 5 && <Star size={20} className="text-accent fill-accent" />}
+          {lessons.map((lesson) => {
+            const hasProgress = document.cookie.split('; ').some((item) => item.trim().startsWith(`lessonProgress_${lesson.id}=`));
+            
+            return (
+              <Link to={`/lesson/${lesson.id}`} key={lesson.id} className="group">
+                <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-300 h-full flex flex-col transform hover:-translate-y-1">
+                  <div className="flex items-start justify-between mb-4">
+                      <div className="w-12 h-12 bg-indigo-100 text-primary rounded-xl flex items-center justify-center font-bold text-xl group-hover:bg-primary group-hover:text-white transition-colors">
+                      {lesson.id}
+                      </div>
+                      {hasProgress ? (
+                        <div className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                          <Play size={12} className="-ml-1"/> Continuar
+                        </div>
+                      ) : (
+                        lesson.id <= 5 && <Star size={20} className="text-accent fill-accent" />
+                      )}
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:text-primary transition-colors">{lesson.title}</h3>
+                  <p className="text-slate-600 leading-relaxed flex-1">{lesson.description}</p>
+                  <div className="mt-6 text-primary font-semibold flex items-center gap-1 text-sm group-hover:underline">
+                      Empezar lección <ChevronRight className="w-4 h-4" />
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:text-primary transition-colors">{lesson.title}</h3>
-                <p className="text-slate-600 leading-relaxed flex-1">{lesson.description}</p>
-                <div className="mt-6 text-primary font-semibold flex items-center gap-1 text-sm group-hover:underline">
-                    Empezar lección <ChevronRight className="w-4 h-4" />
-                </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            )
+          })}
         </div>
       </main>
         

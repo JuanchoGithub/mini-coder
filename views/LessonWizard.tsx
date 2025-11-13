@@ -8,18 +8,86 @@ import ReactMarkdown from 'react-markdown';
 import CodePlayground from '../components/CodePlayground';
 import LogicSimulator from '../components/LogicSimulator';
 import RobotSimulator2D from '../components/RobotSimulator2D';
-import { ChevronLeft, ChevronRight, CheckCircle, Home, ClipboardCopy, Check, ShieldAlert } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle, Home, ClipboardCopy, Check, ShieldAlert, Trash2 } from 'lucide-react';
 import { ExecutionResult } from '../types';
+
+// --- Cookie Helper Functions ---
+const setCookie = (name: string, value: string, days: number) => {
+    let expires = "";
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+}
+
+const getCookie = (name: string): string | null => {
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(';');
+    for(let i=0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+}
+
+const eraseCookie = (name: string) => {
+    document.cookie = name+'=; Max-Age=-99999999; path=/';
+}
+// --- End Cookie Helpers ---
+
 
 const LessonWizard = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const lessonId = Number(id);
   const lesson = lessons.find(l => l.id === lessonId);
+
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [codeProgress, setCodeProgress] = useState<Record<number, string>>({});
   const [exerciseCompleted, setExerciseCompleted] = useState(false);
   const [exerciseHint, setExerciseHint] = useState<string | null>(null);
   const [isAdminMode, setIsAdminMode] = useState(false);
+
+  // Load progress from cookie on mount/lesson change
+  useEffect(() => {
+    const savedProgressCookie = getCookie(`lessonProgress_${lessonId}`);
+    if (savedProgressCookie) {
+        try {
+            const savedProgress = JSON.parse(savedProgressCookie);
+            if (savedProgress.currentStepIndex !== undefined) {
+                setCurrentStepIndex(savedProgress.currentStepIndex);
+            }
+            if (savedProgress.codeProgress) {
+                setCodeProgress(savedProgress.codeProgress);
+            }
+        } catch (e) {
+            console.error("Failed to parse lesson progress cookie", e);
+            eraseCookie(`lessonProgress_${lessonId}`);
+        }
+    } else {
+        // No saved progress, ensure state is fresh for this lesson
+        setCurrentStepIndex(0);
+        setCodeProgress({});
+    }
+  }, [lessonId]);
+
+  // Save progress to cookie whenever it changes
+  useEffect(() => {
+    // Avoid saving initial blank state on first render
+    if (currentStepIndex === 0 && Object.keys(codeProgress).length === 0) {
+      const savedProgressCookie = getCookie(`lessonProgress_${lessonId}`);
+      if (!savedProgressCookie) return;
+    }
+    const progress = {
+        currentStepIndex,
+        codeProgress,
+    };
+    setCookie(`lessonProgress_${lessonId}`, JSON.stringify(progress), 365);
+  }, [currentStepIndex, codeProgress, lessonId]);
+
 
   // Admin mode activation via key sequence
   useEffect(() => {
@@ -69,6 +137,13 @@ const LessonWizard = () => {
       setCurrentStepIndex(prev => prev - 1);
       setExerciseCompleted(false); 
       setExerciseHint(null);
+    }
+  };
+
+  const handleResetProgress = () => {
+    if (window.confirm("¿Estás seguro de que quieres borrar todo tu progreso en esta lección? Esta acción no se puede deshacer.")) {
+        eraseCookie(`lessonProgress_${lessonId}`);
+        window.location.reload();
     }
   };
 
@@ -200,8 +275,14 @@ const LessonWizard = () => {
                 </div>
             </div>
         </div>
-        <div className="text-sm font-medium text-slate-500 hidden sm:block">
-            Paso {currentStepIndex + 1} de {lesson.steps.length}
+        <div className="flex items-center gap-4">
+             <button onClick={handleResetProgress} className="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors" title="Borrar progreso de esta lección">
+                <Trash2 size={14} />
+                <span className="hidden md:inline">Resetear</span>
+            </button>
+            <div className="text-sm font-medium text-slate-500 hidden sm:block">
+                Paso {currentStepIndex + 1} de {lesson.steps.length}
+            </div>
         </div>
       </header>
 
@@ -285,8 +366,16 @@ const LessonWizard = () => {
                 )}
                 <div className="flex-1 min-h-0">
                   <CodePlayground 
+                      key={currentStepIndex} // Force re-render on step change
                       initialCode={currentStep.exercise.initialCode || ''} 
                       onRunComplete={(result, code) => checkExercise(result, code)}
+                      code={codeProgress[currentStepIndex] ?? currentStep.exercise.initialCode ?? ''}
+                      onCodeChange={(newCode) => {
+                          setCodeProgress(prev => ({
+                              ...prev,
+                              [currentStepIndex]: newCode
+                          }));
+                      }}
                   />
                 </div>
             </div>
