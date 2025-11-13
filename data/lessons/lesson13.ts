@@ -1,4 +1,3 @@
-
 import { Lesson } from '../../types';
 
 export const lesson13: Lesson = {
@@ -271,12 +270,12 @@ Esta línea comprueba si las casillas 1, 2 y 3 contienen el mismo símbolo (que 
       type: 'code',
       title: "Desafío Final: El Juego Completo",
       content: `
-Aquí tienes el código casi completo. Funciona, pero solo comprueba las filas horizontales para la victoria.
+Aquí tienes el código **completo** para el TA-TE-TI. ¡Felicidades por llegar hasta aquí!
 
-**Tu misión:** Añade la lógica que falta para comprobar las **3 columnas verticales** y las **2 diagonales**. Con esto, el juego estará terminado.
+**Tu misión:** Lee y entiende el código. Fíjate bien en la sección \`--- Comprobar victoria ---\`. Verás cómo se usan múltiples sentencias \`IF\` para revisar todas las condiciones ganadoras: las 3 filas, las 3 columnas y las 2 diagonales. ¡Luego, pulsa Ejecutar y juega!
       `,
       exercise: {
-        prompt: "Completa la lógica de victoria. Debes añadir las comprobaciones para las 3 columnas y las 2 diagonales. Si se encuentra un ganador, la variable `ganador$` debe actualizarse con el valor de `turno$`, y el juego terminará.",
+        prompt: "¡El juego está completo! Analiza la sección 'Comprobar victoria' para entender cómo se detecta un ganador en las filas, columnas y diagonales. Luego, ejecuta el código y juega una partida contra un amigo.",
         initialCode: `DIM tablero$(9)
 tablero$(1) = "1"
 tablero$(2) = "2"
@@ -319,11 +318,24 @@ DO WHILE ganador$ = "" AND turnos_jugados < 9
           IF tablero$(7)=tablero$(8) AND tablero$(8)=tablero$(9) THEN
               ganador$ = turno$
           END IF
-          ' Columnas (¡TU CÓDIGO AQUÍ!)
-          ' Añade 3 IFs para las columnas (1,4,7), (2,5,8) y (3,6,9)
+          ' Columnas
+          IF tablero$(1)=tablero$(4) AND tablero$(4)=tablero$(7) THEN
+              ganador$ = turno$
+          END IF
+          IF tablero$(2)=tablero$(5) AND tablero$(5)=tablero$(8) THEN
+              ganador$ = turno$
+          END IF
+          IF tablero$(3)=tablero$(6) AND tablero$(6)=tablero$(9) THEN
+              ganador$ = turno$
+          END IF
 
-          ' Diagonales (¡TU CÓDIGO AQUÍ!)
-          ' Añade 2 IFs para las diagonales (1,5,9) y (3,5,7)
+          ' Diagonales
+          IF tablero$(1)=tablero$(5) AND tablero$(5)=tablero$(9) THEN
+              ganador$ = turno$
+          END IF
+          IF tablero$(3)=tablero$(5) AND tablero$(5)=tablero$(7) THEN
+              ganador$ = turno$
+          END IF
 
           IF turno$ = "X" THEN
               turno$ = "O"
