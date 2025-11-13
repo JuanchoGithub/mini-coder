@@ -1,5 +1,4 @@
 
-
 import React, { useState, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Home, BookOpen, Search, Hash } from 'lucide-react';
@@ -108,7 +107,9 @@ const Manual = () => {
             {currentEntry.syntax && (
                 <div className="mb-8 bg-slate-100 p-4 rounded-xl border border-slate-200 font-mono text-sm text-slate-700 animate-fadeIn">
                     <div className="text-xs font-bold text-slate-400 uppercase mb-2">Sintaxis</div>
-                    <pre className="whitespace-pre-wrap">{currentEntry.syntax}</pre>
+                    <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-strong:font-bold prose-code:text-pink-600 prose-code:bg-slate-200 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none">
+                        <ReactMarkdown>{currentEntry.syntax.replace(/\n/g, '  \n')}</ReactMarkdown>
+                    </div>
                 </div>
             )}
 
