@@ -312,7 +312,7 @@ export const executeCode = (code: string, inputVal?: string): ExecutionResult =>
         return { output: currentState.output, isWaitingForInput: true, inputVariableName: varName };
 
       // --- LET (assignment) or Implicit Assignment ---
-      } else if (upperLine.startsWith('LET ') || (rawLine.includes('=') && !upperLine.startsWith('IF ') && !upperLine.startsWith('FOR ') && !upperLine.startsWith('DO '))) {
+      } else if (upperLine.startsWith('LET ') || (rawLine.includes('=') && !upperLine.startsWith('IF ') && !upperLine.startsWith('ELSEIF ') && !upperLine.startsWith('FOR ') && !upperLine.startsWith('DO '))) {
           let assignStr = rawLine;
           if (upperLine.startsWith('LET ')) {
               assignStr = rawLine.substring(4).trim();
