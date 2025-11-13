@@ -1,3 +1,4 @@
+
 import { Lesson } from '../../types';
 
 export const lesson8: Lesson = {
@@ -67,13 +68,17 @@ Prueba un DO WHILE básico: Pide números hasta que sea positivo.
       `,
       exercise: {
           prompt: "Repite INPUT hasta que numero >0, entonces PRINT 'OK'.",
-          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `LET numero = 0
 DO WHILE numero <= 0
    INPUT "Ingresa un número positivo: ", numero
 LOOP
 PRINT "OK, " + numero + " es positivo."`,
-          expectedOutput: "OK, 5 es positivo."  // Asumiendo input 5
+          expectedOutput: "OK, 5 es positivo.",
+          solution: `LET numero = 0
+DO WHILE numero <= 0
+   INPUT "Ingresa un número positivo: ", numero
+LOOP
+PRINT "OK, " + numero + " es positivo."`
       }
     },
     {
@@ -105,7 +110,6 @@ Ventajas: Fácil de leer, permite múltiples formas de salir (ej: IFs anidados p
       `
     },
     {
-      // FIX: Removed leading space from ' theory', which was an invalid type value.
       type: 'theory',
       title: "¡Peligro! El Bucle Infinito",
       content: `
@@ -145,13 +149,21 @@ Intenta crear un bucle infinito a propósito (WHILE 1=1), ejecuta, ve el problem
       `,
       exercise: {
           prompt: "Agrega LET count=0; count=count+1; IF count>5 THEN salir=0.",
-          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `LET salir = 1
 DO WHILE salir = 1
    PRINT "Esto debería parar después de 5..."
    ' Agrega contador y IF para flip salir
 LOOP`,
-          expectedOutput: "Esto debería parar después de 5...\nEsto debería parar después de 5...\nEsto debería parar después de 5...\nEsto debería parar después de 5...\nEsto debería parar después de 5...\nEsto debería parar después de 5..."
+          expectedOutput: "Esto debería parar después de 5...\nEsto debería parar después de 5...\nEsto debería parar después de 5...\nEsto debería parar después de 5...\nEsto debería parar después de 5...\nEsto debería parar después de 5...",
+          solution: `LET salir = 1
+LET count = 0
+DO WHILE salir = 1
+   PRINT "Esto debería parar después de 5..."
+   count = count + 1
+   IF count > 5 THEN
+       salir = 0
+   END IF
+LOOP`
       }
     },
     {
@@ -193,7 +205,25 @@ DO WHILE intento <> secreto
 LOOP
 
 PRINT "¡CORRECTO! El número era " + secreto + ". ¡Ganaste en " + count + " intentos!"`,
-        solutionCues: ['DO WHILE', 'LOOP', 'IF', 'ELSEIF']
+        solutionCues: ['DO WHILE', 'LOOP', 'IF', 'ELSEIF'],
+        solution: `LET secreto = 25
+LET intento = 0
+LET count = 0
+
+PRINT "He pensado en un número del 1 al 50. ¡Adivínalo!"
+
+DO WHILE intento <> secreto
+    count = count + 1
+    INPUT "Tu intento: ", intento
+    
+    IF intento < secreto THEN
+        PRINT "Demasiado bajo... ¡Más alto!"
+    ELSEIF intento > secreto THEN
+        PRINT "Demasiado alto... ¡Más bajo!"
+    END IF
+LOOP
+
+PRINT "¡CORRECTO! El número era " + secreto + ". ¡Ganaste en " + count + " intentos!"`
       }
     },
     {

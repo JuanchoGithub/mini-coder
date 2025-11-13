@@ -8,7 +8,7 @@ import ReactMarkdown from 'react-markdown';
 import CodePlayground from '../components/CodePlayground';
 import LogicSimulator from '../components/LogicSimulator';
 import RobotSimulator2D from '../components/RobotSimulator2D';
-import { ChevronLeft, ChevronRight, CheckCircle, Home, ClipboardCopy, Check, ShieldAlert, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle, Home, ClipboardCopy, Check, ShieldAlert, Trash2, Lightbulb, X } from 'lucide-react';
 import { ExecutionResult } from '../types';
 
 // --- Cookie Helper Functions ---
@@ -50,6 +50,9 @@ const LessonWizard = () => {
   const [exerciseCompleted, setExerciseCompleted] = useState(false);
   const [exerciseHint, setExerciseHint] = useState<string | null>(null);
   const [isAdminMode, setIsAdminMode] = useState(false);
+  const [isSolutionVisible, setIsSolutionVisible] = useState(false);
+  const [solutionCode, setSolutionCode] = useState<string | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
 
   // Load progress from cookie on mount/lesson change
   useEffect(() => {
@@ -210,16 +213,13 @@ const LessonWizard = () => {
 };
 
   // Custom component for rendering <pre> blocks in Markdown with a copy button
-  // FIX: Provide a proper type for `props` to avoid errors with `children`.
   const CustomPre = (props: React.ComponentProps<'pre'>) => {
     const { children } = props;
     const [isCopied, setIsCopied] = useState(false);
 
-    // Helper to recursively get text content from React children
     const getCodeString = (node: React.ReactNode): string => {
         if (typeof node === 'string') return node;
         if (Array.isArray(node)) return node.map(getCodeString).join('');
-        // FIX: Safely access props.children by casting, as React.isValidElement does not guarantee its presence.
         if (React.isValidElement(node) && (node.props as { children?: React.ReactNode }).children) {
             return getCodeString((node.props as { children: React.ReactNode }).children);
         }
@@ -232,7 +232,7 @@ const LessonWizard = () => {
         if (codeString) {
             navigator.clipboard.writeText(codeString).then(() => {
                 setIsCopied(true);
-                setTimeout(() => setIsCopied(false), 2000); // Reset after 2s
+                setTimeout(() => setIsCopied(false), 2000);
             }).catch(err => {
                 console.error("Failed to copy text: ", err);
             });
@@ -241,7 +241,6 @@ const LessonWizard = () => {
     
     return (
         <div className="relative group bg-slate-800 text-slate-100 p-6 my-4 rounded-xl shadow-inner">
-             {/* The <pre> from markdown will be nested here. Reset its styles to avoid conflicts. */}
             <pre {...props} className="!bg-transparent !p-0 !m-0 !shadow-none !whitespace-pre-wrap !text-sm" /> 
             <button
                 onClick={handleCopy}
@@ -300,11 +299,22 @@ const LessonWizard = () => {
                 </div>
             </div>
             
-             {/* Prompts and simple exercises remain inside the white box */}
             {currentStep.type === 'code' && currentStep.exercise && (
-                 <div className="bg-amber-50 border-l-4 border-amber-400 p-4 text-amber-800 font-medium">
-                    💡 Tu misión: {currentStep.exercise.prompt}
-                 </div>
+                 <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg text-amber-800 font-medium flex justify-between items-center">
+                    <span>💡 Tu misión: {currentStep.exercise.prompt}</span>
+                    {currentStep.exercise.solution && (
+                        <button 
+                            onClick={() => {
+                                setSolutionCode(currentStep.exercise.solution ?? '');
+                                setIsSolutionVisible(true);
+                                setIsCopied(false);
+                            }}
+                            className="flex items-center gap-2 px-3 py-1.5 bg-amber-200 text-amber-900 font-bold text-xs rounded-lg hover:bg-amber-300 transition-colors flex-shrink-0 ml-4"
+                        >
+                            <Lightbulb size={14} /> Ver Solución
+                        </button>
+                    )}
+                </div>
             )}
 
             {currentStep.type === 'exercise' && currentStep.exercise?.expectedOutput === 'DONE' && (
@@ -322,7 +332,6 @@ const LessonWizard = () => {
         
         {/* --- INTERACTIVE COMPONENTS RENDERED EXTERNALLY --- */}
         
-        {/* Logic Simulator (Text) */}
         {currentStep.type === 'logic-simulation' && currentStep.scenarioId && (
             <div className="flex-1">
                 {(() => {
@@ -339,7 +348,6 @@ const LessonWizard = () => {
             </div>
         )}
 
-         {/* Logic Simulator (2D) */}
         {currentStep.type === 'logic-simulation-2d' && currentStep.scenarioId && (
             <div className="flex-1">
                 {(() => {
@@ -356,7 +364,6 @@ const LessonWizard = () => {
             </div>
         )}
 
-        {/* Code Playground */}
         {currentStep.type === 'code' && currentStep.exercise && (
             <div className="flex-1 flex flex-col min-h-0">
                 {exerciseHint && (
@@ -366,7 +373,7 @@ const LessonWizard = () => {
                 )}
                 <div className="flex-1 min-h-0">
                   <CodePlayground 
-                      key={currentStepIndex} // Force re-render on step change
+                      key={currentStepIndex}
                       initialCode={currentStep.exercise.initialCode || ''} 
                       onRunComplete={(result, code) => checkExercise(result, code)}
                       code={codeProgress[currentStepIndex] ?? currentStep.exercise.initialCode ?? ''}
@@ -383,7 +390,6 @@ const LessonWizard = () => {
 
       </main>
 
-      {/* Footer Nav */}
       <footer className="bg-white border-t border-slate-200 py-4 px-4 sm:px-8 sticky bottom-0">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
             <button 
@@ -414,6 +420,39 @@ const LessonWizard = () => {
             </button>
         </div>
       </footer>
+
+      {isSolutionVisible && solutionCode && (
+        <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 animate-fadeIn" onClick={() => setIsSolutionVisible(false)}>
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-center p-4 border-b border-slate-200">
+                    <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2"><Lightbulb size={20} className="text-amber-500" /> Solución Propuesta</h3>
+                    <button onClick={() => setIsSolutionVisible(false)} className="p-2 text-slate-400 hover:bg-slate-100 rounded-full">
+                        <X size={20} />
+                    </button>
+                </div>
+                <div className="p-6 flex-1 overflow-y-auto">
+                    <pre className="bg-slate-900 text-slate-100 p-4 rounded-xl text-sm whitespace-pre-wrap font-mono">
+                        <code>{solutionCode}</code>
+                    </pre>
+                </div>
+                <div className="p-4 border-t border-slate-200 bg-slate-50 text-right">
+                    <button 
+                        onClick={() => {
+                            if (solutionCode) {
+                                navigator.clipboard.writeText(solutionCode);
+                                setIsCopied(true);
+                                setTimeout(() => setIsCopied(false), 2000);
+                            }
+                        }}
+                        disabled={isCopied}
+                        className="w-32 flex items-center justify-center px-4 py-2 bg-primary text-white font-bold rounded-lg hover:bg-indigo-700 transition-all disabled:bg-green-500"
+                    >
+                        {isCopied ? <><Check size={16} className="mr-2"/> Copiado</> : <><ClipboardCopy size={16} className="mr-2"/> Copiar</>}
+                    </button>
+                </div>
+            </div>
+        </div>
+    )}
     </div>
   );
 };

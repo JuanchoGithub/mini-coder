@@ -1,3 +1,4 @@
+
 import { Lesson } from '../../types';
 
 export const lesson3: Lesson = {
@@ -103,12 +104,15 @@ Intenta predecir qué saldrá antes de ejecutar cada línea. Luego, experimenta 
       `,
       exercise: {
           prompt: "Añade una línea al final que compruebe si 50 es diferente (<>) de 50. Debería imprimir 0 (Falso). Luego, agrega otra para 50 <= 100 (debe ser 1).",
-          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `PRINT 10 > 5 ' Esto dará 1 (Verdadero)
 PRINT 20 >= 20 ' Esto dará 1 (Verdadero)
 
 ' Escribe tu código aquí para comprobar si 50 <> 50 y 50 <= 100`,
-          expectedOutput: "1\n1\n0\n1"
+          expectedOutput: "1\n1\n0\n1",
+          solution: `PRINT 10 > 5
+PRINT 20 >= 20
+PRINT 50 <> 50
+PRINT 50 <= 100`
       }
     },
     {
@@ -141,11 +145,13 @@ Experimenta: Cambia 'numero' a valores como 5, 15, 25 y ve los resultados. ¿Qu�
       `,
       exercise: {
           prompt: "Cambia el valor de la variable 'numero' a 25. Al ejecutar, el programa ahora debería imprimir que NO es especial (un 0).",
-          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `numero = 15
 es_especial = (numero > 10) AND (numero < 20)
 PRINT "¿Es especial? " + es_especial`,
-          expectedOutput: "¿Es especial? 0"
+          expectedOutput: "¿Es especial? 0",
+          solution: `numero = 25
+es_especial = (numero > 10) AND (numero < 20)
+PRINT "¿Es especial? " + es_especial`
       }
     },
     {
@@ -194,13 +200,16 @@ Cambia la edad y ve cómo invierte el resultado.
       `,
       exercise: {
           prompt: "Agrega NOT a la condición para imprimir 1 si NO es menor (edad >=18). Prueba con edad=17 (debe ser 0).",
-          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `edad = 20
 es_menor = (edad < 18)
 PRINT "Es menor? " + es_menor
 
 ' Agrega aquí con NOT'`,
-          expectedOutput: "Es menor? 0\nNo es menor? 1"  // Ajusta según output
+          expectedOutput: "Es menor? 0\nNo es menor? 1",
+          solution: `edad = 17
+es_menor = (edad < 18)
+PRINT "Es menor? " + es_menor
+PRINT "No es menor? " + (NOT es_menor)`
       }
     },
     {
@@ -219,14 +228,19 @@ Modifica variables para probar escenarios: ¿Qué hace que suene? ¿Qué la sile
       `,
       exercise: {
           prompt: "Modifica los valores de las variables (cámbialos entre 0 y 1) para crear una situación donde la alarma NO suene. El resultado debe ser 0.",
-          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `es_noche = 1 ' 1=SI, 0=NO
 puerta_abierta = 0 ' 1=SI, 0=NO
 boton_panico = 1 ' 1=SI, 0=NO
 
 alarma = (es_noche AND puerta_abierta) OR boton_panico
 PRINT "¿Suena la alarma? " + alarma`,
-          expectedOutput: "¿Suena la alarma? 0"
+          expectedOutput: "¿Suena la alarma? 0",
+          solution: `es_noche = 1 ' 1=SI, 0=NO
+puerta_abierta = 0 ' 1=SI, 0=NO
+boton_panico = 0 ' 1=SI, 0=NO
+
+alarma = (es_noche AND puerta_abierta) OR boton_panico
+PRINT "¿Suena la alarma? " + alarma`
       }
     },
     {

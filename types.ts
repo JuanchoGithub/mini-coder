@@ -13,7 +13,8 @@ export interface LessonStep {
     initialCode?: string;
     solutionCues?: string[]; // Keywords to look for in code to loosely validate
     expectedOutput?: string;
-    errorHints?: ExerciseErrorHint[]; // New: For providing targeted feedback on common mistakes
+    errorHints?: ExerciseErrorHint[]; // For providing targeted feedback on common mistakes
+    solution?: string; // The complete solution code for the exercise
   };
   scenarioId?: string; // For logic-simulation steps
 }

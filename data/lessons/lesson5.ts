@@ -1,3 +1,4 @@
+
 import { Lesson } from '../../types';
 
 export const lesson5: Lesson = {
@@ -45,13 +46,17 @@ Experimenta: Cambia números y ve qué pasa si divides por cero (¡error semánt
       `,
       exercise: {
           prompt: "Añade una cuarta línea que calcule el resultado de (50 - 10) / 4. El resultado debería ser 10. Luego, agrega una para 100 / (5 + 5).",
-          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `PRINT 10 + 5 * 2 ' Resultado: 20 (multiplica primero)
 PRINT (10 + 5) * 2 ' Resultado: 30 (paréntesis cambian orden)
 PRINT 100 / 2 / 5 ' Resultado: 10 (divide secuencial)
 
 ' Añade tus cálculos aquí debajo'`,
-          expectedOutput: "20\n30\n10\n10\n10"
+          expectedOutput: "20\n30\n10\n10\n10",
+          solution: `PRINT 10 + 5 * 2
+PRINT (10 + 5) * 2
+PRINT 100 / 2 / 5
+PRINT (50 - 10) / 4
+PRINT 100 / (5 + 5)`
       }
     },
     {
@@ -80,12 +85,15 @@ Usa PRINT para ver resultados booleanos. Predice antes de ejecutar.
       `,
       exercise: {
           prompt: "Agrega líneas para comparar si 15 <= 20 (1) y si 'A' < 'B' (1, comparación ASCII).",
-          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `PRINT 10 = 10 ' 1
 PRINT 5 > 10 ' 0
 
 ' Agrega aquí'`,
-          expectedOutput: "1\n0\n1\n1"
+          expectedOutput: "1\n0\n1\n1",
+          solution: `PRINT 10 = 10
+PRINT 5 > 10
+PRINT 15 <= 20
+PRINT "A" < "B"`
       }
     },
     {
@@ -133,7 +141,13 @@ Recuerda:
 ' dias = meses * 30  ' Aproximado
 
 PRINT "¡Wow! Has vivido aproximadamente " + meses + " meses y " + dias + " días."`,
-        solutionCues: ['*', '12', '30', 'PRINT']
+        solutionCues: ['*', '12', '30', 'PRINT'],
+        solution: `INPUT "¿Cuántos años tienes? ", anios
+
+meses = anios * 12
+dias = meses * 30
+
+PRINT "¡Wow! Has vivido aproximadamente " + meses + " meses y " + dias + " días."`
       }
     },
     {

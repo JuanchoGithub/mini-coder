@@ -1,3 +1,4 @@
+
 import { Lesson } from '../../types';
 
 export const lesson13: Lesson = {
@@ -53,7 +54,20 @@ PRINT "La casilla 5 contiene: " + tablero$(5)
 PRINT "La casilla 9 contiene: " + tablero$(9)
 `,
         expectedOutput: "La casilla 5 contiene: 5\nLa casilla 9 contiene: 9",
-        solutionCues: ['DIM tablero$(9)']
+        solutionCues: ['DIM tablero$(9)'],
+        solution: `DIM tablero$(9)
+tablero$(1) = "1"
+tablero$(2) = "2"
+tablero$(3) = "3"
+tablero$(4) = "4"
+tablero$(5) = "5"
+tablero$(6) = "6"
+tablero$(7) = "7"
+tablero$(8) = "8"
+tablero$(9) = "9"
+
+PRINT "La casilla 5 contiene: " + tablero$(5)
+PRINT "La casilla 9 contiene: " + tablero$(9)`
       }
     },
     {
@@ -101,7 +115,25 @@ PRINT "---|---"
 ' (casillas 4, 5, 6 y 7, 8, 9)
 `,
         expectedOutput: "--- TA-TE-TI ---\n\n 1 | 2 | 3 \n---|---\n 4 | 5 | 6 \n---|---\n 7 | 8 | 9 ",
-        solutionCues: ['tablero$(4)', 'tablero$(7)']
+        solutionCues: ['tablero$(4)', 'tablero$(7)'],
+        solution: `DIM tablero$(9)
+tablero$(1) = "1"
+tablero$(2) = "2"
+tablero$(3) = "3"
+tablero$(4) = "4"
+tablero$(5) = "5"
+tablero$(6) = "6"
+tablero$(7) = "7"
+tablero$(8) = "8"
+tablero$(9) = "9"
+
+PRINT "--- TA-TE-TI ---"
+PRINT ""
+PRINT " " + tablero$(1) + " | " + tablero$(2) + " | " + tablero$(3) + " "
+PRINT "---|---|---"
+PRINT " " + tablero$(4) + " | " + tablero$(5) + " | " + tablero$(6) + " "
+PRINT "---|---|---"
+PRINT " " + tablero$(7) + " | " + tablero$(8) + " | " + tablero$(9) + " "`
       }
     },
     {
@@ -173,7 +205,48 @@ PRINT " " + tablero$(4) + " | " + tablero$(5) + " | " + tablero$(6) + " "
 PRINT "---|---|---"
 PRINT " " + tablero$(7) + " | " + tablero$(8) + " | " + tablero$(9) + " "
 `,
-        solutionCues: ['tablero$(jugada) = turno$']
+        solutionCues: ['tablero$(jugada) = turno$'],
+        solution: `DIM tablero$(9)
+tablero$(1) = "1"
+tablero$(2) = "2"
+tablero$(3) = "3"
+tablero$(4) = "4"
+tablero$(5) = "5"
+tablero$(6) = "6"
+tablero$(7) = "7"
+tablero$(8) = "8"
+tablero$(9) = "9"
+turno$ = "X"
+
+' --- Dibuja el tablero una vez ---
+PRINT " " + tablero$(1) + " | " + tablero$(2) + " | " + tablero$(3) + " "
+PRINT "---|---|---"
+PRINT " " + tablero$(4) + " | " + tablero$(5) + " | " + tablero$(6) + " "
+PRINT "---|---|---"
+PRINT " " + tablero$(7) + " | " + tablero$(8) + " | " + tablero$(9) + " "
+PRINT ""
+
+' --- Pide la jugada ---
+INPUT "Turno de '" + turno$ + "'. Elige una casilla: ", jugada
+
+' --- Actualiza el tablero ---
+tablero$(jugada) = turno$
+
+' --- Cambia el turno ---
+IF turno$ = "X" THEN
+    turno$ = "O"
+ELSE
+    turno$ = "X"
+END IF
+
+' --- Imprime el tablero de nuevo para ver el cambio ---
+PRINT ""
+PRINT "Tablero actualizado:"
+PRINT " " + tablero$(1) + " | " + tablero$(2) + " | " + tablero$(3) + " "
+PRINT "---|---|---"
+PRINT " " + tablero$(4) + " | " + tablero$(5) + " | " + tablero$(6) + " "
+PRINT "---|---|---"
+PRINT " " + tablero$(7) + " | " + tablero$(8) + " | " + tablero$(9) + " "`
       }
     },
     {
@@ -281,7 +354,96 @@ ELSE
     PRINT "¡Es un empate!"
 END IF
 `,
-        solutionCues: ['tablero$(1)=tablero$(4)', 'tablero$(2)=tablero$(5)', 'tablero$(3)=tablero$(6)', 'tablero$(1)=tablero$(5)', 'tablero$(3)=tablero$(5)']
+        solutionCues: ['tablero$(1)=tablero$(4)', 'tablero$(2)=tablero$(5)', 'tablero$(3)=tablero$(6)', 'tablero$(1)=tablero$(5)', 'tablero$(3)=tablero$(5)'],
+        solution: `DIM tablero$(9)
+tablero$(1) = "1"
+tablero$(2) = "2"
+tablero$(3) = "3"
+tablero$(4) = "4"
+tablero$(5) = "5"
+tablero$(6) = "6"
+tablero$(7) = "7"
+tablero$(8) = "8"
+tablero$(9) = "9"
+
+turno$ = "X"
+turnos_jugados = 0
+ganador$ = ""
+
+DO WHILE ganador$ = "" AND turnos_jugados < 9
+    CLS
+    PRINT " " + tablero$(1) + " | " + tablero$(2) + " | " + tablero$(3) + " "
+    PRINT "---|---|---"
+    PRINT " " + tablero$(4) + " | " + tablero$(5) + " | " + tablero$(6) + " "
+    PRINT "---|---|---"
+    PRINT " " + tablero$(7) + " | " + tablero$(8) + " | " + tablero$(9) + " "
+    PRINT ""
+    
+    INPUT "Turno de '" + turno$ + "'. Elige una casilla: ", jugada
+    
+    IF jugada >= 1 AND jugada <= 9 THEN
+      IF tablero$(jugada) <> "X" AND tablero$(jugada) <> "O" THEN
+          tablero$(jugada) = turno$
+          turnos_jugados = turnos_jugados + 1
+          
+          ' --- Comprobar victoria ---
+          ' Filas (ya hechas)
+          IF tablero$(1)=tablero$(2) AND tablero$(2)=tablero$(3) THEN
+              ganador$ = turno$
+          END IF
+          IF tablero$(4)=tablero$(5) AND tablero$(5)=tablero$(6) THEN
+              ganador$ = turno$
+          END IF
+          IF tablero$(7)=tablero$(8) AND tablero$(8)=tablero$(9) THEN
+              ganador$ = turno$
+          END IF
+          ' Columnas
+          IF tablero$(1)=tablero$(4) AND tablero$(4)=tablero$(7) THEN
+              ganador$ = turno$
+          END IF
+          IF tablero$(2)=tablero$(5) AND tablero$(5)=tablero$(8) THEN
+              ganador$ = turno$
+          END IF
+          IF tablero$(3)=tablero$(6) AND tablero$(6)=tablero$(9) THEN
+              ganador$ = turno$
+          END IF
+          ' Diagonales
+          IF tablero$(1)=tablero$(5) AND tablero$(5)=tablero$(9) THEN
+              ganador$ = turno$
+          END IF
+          IF tablero$(3)=tablero$(5) AND tablero$(5)=tablero$(7) THEN
+              ganador$ = turno$
+          END IF
+
+          IF turno$ = "X" THEN
+              turno$ = "O"
+          ELSE
+              turno$ = "X"
+          END IF
+      ELSE
+          PRINT "¡Casilla ocupada! Pulsa Enter para continuar."
+          INPUT temp$
+      END IF
+    ELSE
+      PRINT "¡Jugada inválida! Pulsa Enter para continuar."
+      INPUT temp$
+    END IF
+LOOP
+
+' --- Mostrar resultado final ---
+CLS
+PRINT " " + tablero$(1) + " | " + tablero$(2) + " | " + tablero$(3) + " "
+PRINT "---|---|---"
+PRINT " " + tablero$(4) + " | " + tablero$(5) + " | " + tablero$(6) + " "
+PRINT "---|---|---"
+PRINT " " + tablero$(7) + " | " + tablero$(8) + " | " + tablero$(9) + " "
+PRINT ""
+IF ganador$ <> "" THEN
+    PRINT "¡El ganador es " + ganador$ + "!"
+ELSE
+    PRINT "¡Es un empate!"
+END IF
+`
       }
     },
     {

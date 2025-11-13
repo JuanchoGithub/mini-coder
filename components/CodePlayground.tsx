@@ -47,10 +47,16 @@ const CodePlayground: React.FC<CodePlaygroundProps> = (props) => {
 
   const handleRun = async (inputVal?: string) => {
     setError(null);
-    if (!inputVal) setOutput([]); // Clear output on fresh run
+    if (!inputVal) setOutput([]);
 
     setIsRunning(true);
-    const result: ExecutionResult = await executeCode(code, inputVal);
+
+    // Callback for real-time UI updates from the interpreter
+    const onOutputUpdate = (newOutput: OutputLine[]) => {
+      setOutput([...newOutput]); // Use spread to create a new array, forcing a re-render
+    };
+
+    const result: ExecutionResult = await executeCode(code, inputVal, onOutputUpdate);
     setIsRunning(false);
 
     if (result.error) {
@@ -59,7 +65,7 @@ const CodePlayground: React.FC<CodePlaygroundProps> = (props) => {
       // Notify parent even on error, so we can have exercises that require causing errors
       if (onRunComplete) onRunComplete(result, code);
     } else {
-      // Keep previous output if we were just waiting for input, otherwise set new
+      // Set the final state from the result to ensure consistency
       setOutput(result.output);
       setIsWaitingForInput(!!result.isWaitingForInput);
       

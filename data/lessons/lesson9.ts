@@ -1,3 +1,4 @@
+
 import { Lesson } from '../../types';
 
 export const lesson9: Lesson = {
@@ -57,7 +58,6 @@ Vamos a crear el esqueleto de nuestro juego. Tu tarea es construir un bucle prin
       `,
       exercise: {
         prompt: "Crea un bucle controlado por una bandera `jugando`. Usa un contador para que, después de 5 turnos, la bandera `jugando` se ponga a 0 y el bucle termine.",
-        // FIX: Added closing backtick to initialCode template literal.
         initialCode: `jugando = 1
 contador_turnos = 0
 
@@ -68,7 +68,17 @@ contador_turnos = 0
 ' 3. Usa un IF para comprobar si el contador ha llegado a 5.
 '    Si es así, cambia 'jugando' a 0.
 `,
-        expectedOutput: "Turno número 1\nTurno número 2\nTurno número 3\nTurno número 4\nTurno número 5"
+        expectedOutput: "Turno número 1\nTurno número 2\nTurno número 3\nTurno número 4\nTurno número 5",
+        solution: `jugando = 1
+contador_turnos = 0
+
+DO WHILE jugando = 1
+    contador_turnos = contador_turnos + 1
+    PRINT "Turno número " + contador_turnos
+    IF contador_turnos >= 5 THEN
+        jugando = 0
+    END IF
+LOOP`
       }
     },
     {
@@ -93,7 +103,6 @@ Ahora, añade las variables de estado a tu código. Colócalas justo antes de qu
       `,
       exercise: {
         prompt: "Añade las variables `vida`, `habitacion` y `tiene_espada` con sus valores iniciales. Luego, imprime un reporte de estado antes de que comience el bucle.",
-        // FIX: Added closing backtick to initialCode template literal.
         initialCode: `' --- Variables de Estado ---
 ' Define aquí 'vida', 'habitacion' y 'tiene_espada'
 
@@ -110,7 +119,22 @@ DO WHILE jugando = 1
     jugando = 0 ' Salimos para que no sea infinito
 LOOP
 `,
-        expectedOutput: "--- INICIO DE LA AVENTURA ---\nVida inicial: 3\nUbicación: Habitación 1\nEl juego está en marcha..."
+        expectedOutput: "--- INICIO DE LA AVENTURA ---\nVida inicial: 3\nUbicación: Habitación 1\nEl juego está en marcha...",
+        solution: `' --- Variables de Estado ---
+vida = 3
+habitacion = 1
+tiene_espada = 0
+
+' --- Reporte Inicial ---
+PRINT "--- INICIO DE LA AVENTURA ---"
+PRINT "Vida inicial: " + vida
+PRINT "Ubicación: Habitación " + habitacion
+
+jugando = 1
+DO WHILE jugando = 1
+    PRINT "El juego está en marcha..."
+    jugando = 0 ' Salimos para que no sea infinito
+LOOP`
       }
     },
     {
@@ -141,7 +165,6 @@ Añade la lógica para describir la habitación dentro de tu bucle de juego. Por
       `,
       exercise: {
         prompt: "Dentro del bucle, añade un bloque IF que compruebe si `habitacion` es 1. Si es así, imprime 'Estás en la sala inicial. Hay puertas al NORTE y al ESTE.'",
-        // FIX: Added closing backtick to initialCode template literal.
         initialCode: `vida = 3
 habitacion = 1
 tiene_espada = 0
@@ -156,7 +179,22 @@ DO WHILE jugando = 1
     jugando = 0 ' Salimos para que no sea infinito
 LOOP
 `,
-        expectedOutput: "Estás en la sala inicial. Hay puertas al NORTE y al ESTE.\nAún no puedes moverte."
+        expectedOutput: "Estás en la sala inicial. Hay puertas al NORTE y al ESTE.\nAún no puedes moverte.",
+        solution: `vida = 3
+habitacion = 1
+tiene_espada = 0
+
+jugando = 1
+DO WHILE jugando = 1
+    
+    ' --- Describe la habitación aquí ---
+    IF habitacion = 1 THEN
+        PRINT "Estás en la sala inicial. Hay puertas al NORTE y al ESTE."
+    END IF
+
+    PRINT "Aún no puedes moverte."
+    jugando = 0 ' Salimos para que no sea infinito
+LOOP`
       }
     },
     {
@@ -195,7 +233,6 @@ END IF
       `,
       exercise: {
         prompt: "Añade un INPUT para la `accion$`. Si el jugador está en la habitación 1 y escribe 'NORTE', cambia el valor de `habitacion` a 2.",
-        // FIX: Added closing backtick to initialCode template literal.
         initialCode: `habitacion = 1
 jugando = 1
 
@@ -211,7 +248,22 @@ DO WHILE jugando = 1
     
     jugando = 0
 LOOP`,
-        expectedOutput: "Estás en la sala inicial. Hay una puerta al NORTE.\nNueva ubicación: 2"
+        expectedOutput: "Estás en la sala inicial. Hay una puerta al NORTE.\nNueva ubicación: 2",
+        solution: `habitacion = 1
+jugando = 1
+
+DO WHILE jugando = 1
+    IF habitacion = 1 THEN
+        PRINT "Estás en la sala inicial. Hay una puerta al NORTE."
+        INPUT "> ", accion$
+        IF accion$ = "NORTE" THEN
+            habitacion = 2
+        END IF
+        PRINT "Nueva ubicación: " + habitacion ' Para depurar
+    END IF
+    
+    jugando = 0
+LOOP`
       }
     },
     {
@@ -237,7 +289,6 @@ Es hora de juntar todas las piezas. Aquí está el código casi completo para "E
       `,
       exercise: {
         prompt: "Completa la sección `ELSEIF habitacion = 3`. Si el jugador escribe 'ATACAR', debes comprobar si `tiene_espada` es 1. Si es así, gana el juego (imprime victoria y pon `jugando = 0`). Si no, pierde (imprime derrota y pon `vida = 0`).",
-        // FIX: Added closing backtick to initialCode template literal.
         initialCode: `REM --- CONFIGURACIÓN INICIAL DEL JUEGO ---
 jugando = 1
 vida = 3
@@ -289,7 +340,71 @@ DO WHILE jugando = 1
     END IF
 LOOP
 `,
-         solutionCues: ['INPUT', 'IF', 'ATACAR', 'tiene_espada']
+         solutionCues: ['INPUT', 'IF', 'ATACAR', 'tiene_espada'],
+         solution: `REM --- CONFIGURACIÓN INICIAL DEL JUEGO ---
+jugando = 1
+vida = 3
+habitacion = 1 ' 1=Inicio, 2=Armería, 3=Guarida
+tiene_espada = 0
+
+PRINT "=== EL LABERINTO DEL MINOTAURO ==="
+
+DO WHILE jugando = 1
+    PRINT "" 
+    
+    IF habitacion = 1 THEN
+        PRINT "Estás en la sala inicial. Hay puertas al NORTE y al ESTE."
+        INPUT "> ", accion$
+        IF accion$ = "NORTE" THEN
+            habitacion = 2
+        ELSEIF accion$ = "ESTE" THEN
+            habitacion = 3
+        ELSE
+            PRINT "No entiendo ese comando."
+        END IF
+        
+    ELSEIF habitacion = 2 THEN
+        PRINT "Estás en una vieja armería. Hay una puerta al SUR."
+        INPUT "> ", accion$
+        IF accion$ = "SUR" THEN
+            habitacion = 1
+        ELSEIF accion$ = "BUSCAR" THEN
+            IF tiene_espada = 0 THEN
+                PRINT "¡Encuentras una espada legendaria!"
+                tiene_espada = 1
+            ELSE
+                PRINT "No encuentras nada más."
+            END IF
+        ELSE
+            PRINT "No entiendo ese comando."
+        END IF
+        
+    ELSEIF habitacion = 3 THEN
+        PRINT "¡Estás en la guarida del Minotauro! Te ataca sin piedad."
+        INPUT "> ", accion$
+        IF accion$ = "ATACAR" THEN
+            IF tiene_espada = 1 THEN
+                PRINT "¡Con la espada legendaria, derrotas al Minotauro! ¡Has ganado!"
+                jugando = 0
+            ELSE
+                PRINT "Atacas con tus manos desnudas. El Minotauro te derrota fácilmente."
+                vida = 0
+            END IF
+        ELSEIF accion$ = "OESTE" THEN
+            habitacion = 1
+            PRINT "Huyes de la batalla."
+        ELSE
+            PRINT "El Minotauro no te da tiempo. ¡Has sido derrotado!"
+            vida = 0
+        END IF
+    END IF
+    
+    IF vida <= 0 THEN
+        PRINT "--- FIN DEL JUEGO ---"
+        jugando = 0
+    END IF
+LOOP
+`
       }
     },
     {

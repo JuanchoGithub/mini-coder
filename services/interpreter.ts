@@ -223,6 +223,15 @@ const evaluateExpression = (expr: string, vars: Variables): any => {
     let evalStr = expr.trim();
     if (evalStr === '') return '';
 
+    // --- FIX: Isolate string literals to prevent variable substitution within them ---
+    const stringLiterals: string[] = [];
+    // The regex captures strings, handling escaped quotes.
+    evalStr = evalStr.replace(/"(?:[^"\\]|\\.)*"/g, (match) => {
+        const placeholder = `__STRING_LITERAL_${stringLiterals.length}__`;
+        stringLiterals.push(match);
+        return placeholder;
+    });
+
     // 1. Handle RND() function first before any other substitution
     evalStr = evalStr.replace(/\bRND\s*\(\s*([^)]+)\s*\)/gi, (match, p1) => {
         const max = parseInt(evaluateExpression(p1, vars));
@@ -280,6 +289,13 @@ const evaluateExpression = (expr: string, vars: Variables): any => {
                 return String(varValue);
             });
         }
+    }
+
+    // --- FIX: Restore the string literals after variable substitution ---
+    for (let i = 0; i < stringLiterals.length; i++) {
+        const placeholder = `__STRING_LITERAL_${i}__`;
+        // Use a function in replace to avoid issues if a string literal contains '$'
+        evalStr = evalStr.replace(placeholder, () => stringLiterals[i]);
     }
 
     // 3. Transpile QB operators to JS operators
@@ -381,18 +397,49 @@ const findElseOrEndIf = (lines: string[], startIndex: number): number => {
     return lines.length;
 };
 
-export const executeCode = async (code: string, inputVal?: string): Promise<ExecutionResult> => {
+export const executeCode = async (
+    code: string,
+    inputVal?: string,
+    onOutputUpdate?: (output: OutputLine[]) => void
+): Promise<ExecutionResult> => {
   // A new run (not from an INPUT prompt) must reset the entire state.
   if (inputVal === undefined) {
     resetState();
   } else if (inputVal !== undefined && currentState.inputTargetVariable) {
     // Handle Input
-    let val: any = inputVal;
-    // If standard numeric variable, try to cast
-    if (!currentState.inputTargetVariable.endsWith('$') && !isNaN(Number(inputVal)) && inputVal.trim() !== '') {
+    const targetVar = currentState.inputTargetVariable;
+    const arrayAccessMatch = targetVar.match(/^([a-zA-Z_][\w]*[$%#&!]?)\s*\((.+)\)$/);
+
+    if (arrayAccessMatch) {
+      // It's an array access
+      const arrayName = arrayAccessMatch[1];
+      const indexExpr = arrayAccessMatch[2];
+      const index = Math.floor(Number(evaluateExpression(indexExpr, currentState.variables)));
+
+      if (isNaN(index)) throw new Error(`Índice inválido para el arreglo "${arrayName}".`);
+      
+      if (!Array.isArray(currentState.variables[arrayName])) {
+        throw new Error(`La variable "${arrayName}" no es un arreglo. Usa DIM para declararla.`);
+      }
+      if (index < 1 || index >= currentState.variables[arrayName].length) {
+        throw new Error(`Índice fuera de rango: ${index} para el arreglo "${arrayName}".`);
+      }
+      
+      let val: any = inputVal;
+      // Check array type based on its name to correctly cast input.
+      if (!arrayName.endsWith('$') && !isNaN(Number(inputVal)) && inputVal.trim() !== '') {
         val = Number(inputVal);
+      }
+      currentState.variables[arrayName][index] = val;
+    } else {
+      // It's a simple variable
+      let val: any = inputVal;
+      if (!targetVar.endsWith('$') && !isNaN(Number(inputVal)) && inputVal.trim() !== '') {
+        val = Number(inputVal);
+      }
+      currentState.variables[targetVar] = val;
     }
-    currentState.variables[currentState.inputTargetVariable] = val;
+
     currentState.waitingForInput = false;
     currentState.inputTargetVariable = null;
     currentState.currentLineIndex++;
@@ -452,6 +499,7 @@ export const executeCode = async (code: string, inputVal?: string): Promise<Exec
              const val = evaluateExpression(expr, currentState.variables);
              currentState.output.push({ type: 'print', value: String(val) });
         }
+        onOutputUpdate?.(currentState.output);
 
       // --- INPUT ---
       } else if (upperLine.startsWith('INPUT ')) {
@@ -484,6 +532,7 @@ export const executeCode = async (code: string, inputVal?: string): Promise<Exec
         } else {
              currentState.output.push({ type: 'prompt', value: "? " }); // Standard QB generic prompt
         }
+        onOutputUpdate?.(currentState.output);
 
         currentState.waitingForInput = true;
         currentState.inputTargetVariable = varName;
@@ -527,52 +576,82 @@ export const executeCode = async (code: string, inputVal?: string): Promise<Exec
       } else if (upperLine.startsWith('IF ')) {
           const thenIndex = upperLine.indexOf(' THEN');
           if (thenIndex === -1) throw new Error("Se esperaba THEN");
-          
+
+          const statementAfterThen = rawLine.substring(thenIndex + 5).trim();
           const conditionStr = rawLine.substring(3, thenIndex).trim();
-          const condition = evaluateCondition(conditionStr, currentState.variables);
           
-          if (condition) {
-              currentState.blockStack.push({ type: 'IF', line: i });
-              // Continue to next line
+          if (statementAfterThen === '') {
+              // --- MULTI-LINE (BLOCK) IF ---
+              const condition = evaluateCondition(conditionStr, currentState.variables);
+              if (condition) {
+                  currentState.blockStack.push({ type: 'IF', line: i });
+                  // Continue to next line to execute the block
+              } else {
+                  // Jump to ELSE, ELSEIF or END IF
+                  let jumpTo = findElseOrEndIf(lines, i);
+                  
+                  // Handle chaining ELSEIFs if we landed on one
+                  while (lines[jumpTo]?.trim().toUpperCase().startsWith('ELSEIF')) {
+                       const elseIfLine = lines[jumpTo].trim();
+                       const elseIfUpper = elseIfLine.toUpperCase();
+                       const thenIdx = elseIfUpper.indexOf(' THEN');
+                       if (thenIdx === -1) throw new Error("ELSEIF sin THEN");
+                       
+                       const condStr = elseIfLine.substring(6, thenIdx).trim();
+                       if (evaluateCondition(condStr, currentState.variables)) {
+                           currentState.blockStack.push({ type: 'IF', line: jumpTo });
+                           currentState.currentLineIndex = jumpTo;
+                           break; 
+                       } else {
+                           jumpTo = findElseOrEndIf(lines, jumpTo);
+                       }
+                  }
+
+                  currentState.currentLineIndex = jumpTo;
+                  if (lines[jumpTo]?.trim().toUpperCase() === 'ELSE') {
+                      currentState.blockStack.push({ type: 'IF', line: i });
+                  }
+                  if (lines[jumpTo]?.trim().toUpperCase().startsWith('ELSEIF')) {
+                      // Handled in while loop, just need to re-process that line
+                  } else {
+                      // Jumped to ELSE or END IF, we need to skip it.
+                      // No, the loop will increment and execute the line AFTER. Correct.
+                  }
+              }
           } else {
-              // Jump to ELSE, ELSEIF or END IF
-              let jumpTo = findElseOrEndIf(lines, i);
+              // --- SINGLE-LINE IF ---
+              if (statementAfterThen.toUpperCase().includes('END IF')) {
+                  throw new Error("Error de sintaxis: END IF no es necesario para un IF de una sola línea. Use un bloque de varias líneas si necesita un END IF.");
+              }
               
-              // Handle chaining ELSEIFs if we landed on one
-              while (lines[jumpTo]?.trim().toUpperCase().startsWith('ELSEIF')) {
-                   const elseIfLine = lines[jumpTo].trim();
-                   const elseIfUpper = elseIfLine.toUpperCase();
-                   const thenIdx = elseIfUpper.indexOf(' THEN');
-                   if (thenIdx === -1) throw new Error("ELSEIF sin THEN");
-                   
-                   const condStr = elseIfLine.substring(6, thenIdx).trim();
-                   if (evaluateCondition(condStr, currentState.variables)) {
-                       currentState.blockStack.push({ type: 'IF', line: jumpTo }); // Treat as new IF block
-                       currentState.currentLineIndex = jumpTo;
-                       break; 
-                   } else {
-                       jumpTo = findElseOrEndIf(lines, jumpTo);
-                   }
+              const condition = evaluateCondition(conditionStr, currentState.variables);
+              let statementToExecute = '';
+              const elseIndex = statementAfterThen.toUpperCase().lastIndexOf(' ELSE ');
+
+              if (elseIndex > -1) {
+                  if (condition) {
+                      statementToExecute = statementAfterThen.substring(0, elseIndex).trim();
+                  } else {
+                      statementToExecute = statementAfterThen.substring(elseIndex + 6).trim();
+                  }
+              } else {
+                  if (condition) {
+                      statementToExecute = statementAfterThen;
+                  }
               }
 
-              currentState.currentLineIndex = jumpTo;
-               // If we landed on ELSE, we need to enter it
-              if (lines[jumpTo]?.trim().toUpperCase() === 'ELSE') {
-                  currentState.blockStack.push({ type: 'IF', line: i });
+              if (statementToExecute) {
+                  // Inject the statement to execute into the code lines and rewind the interpreter
+                  lines.splice(i + 1, 0, statementToExecute);
               }
-              // If we broke out of the while loop because we found a true ELSEIF, we want to execute the line AFTER it.
-              // But if we exited because we hit an ELSE or END IF, we want to execute the line AFTER that.
-              // The logic is tricky. Let's adjust. If we break, we've already set the line index. The main loop will increment it.
-              if (lines[jumpTo]?.trim().toUpperCase().startsWith('ELSEIF')) {
-                  // We broke from the loop, meaning we found a true one.
-                  // The line index is set to the ELSEIF. The main loop will increment it, and we'll start executing its body.
-                  // This is correct.
-              } else {
-                  // We finished the chain, landing on an ELSE or END IF.
-                  // The line index is set to that line. The main loop will increment it.
-                  // This is also correct.
-              }
+              
+              // Comment out the original line so it's not re-processed on error/rewind
+              lines[i] = `' ${rawLine}`;
+
+              // No change to currentLineIndex. The loop will increment it to i+1,
+              // which is where the new statement was injected (or just the next line if none was).
           }
+
 
       // --- ELSEIF ---
       // If we hit an ELSEIF during normal execution, it means we just finished a TRUE IF block.
@@ -698,6 +777,7 @@ export const executeCode = async (code: string, inputVal?: string): Promise<Exec
 
       } else if (upperLine === 'CLS') {
           currentState.output = [];
+          onOutputUpdate?.(currentState.output);
 
       // --- BEEP ---
       } else if (upperLine === 'BEEP') {
@@ -721,6 +801,8 @@ export const executeCode = async (code: string, inputVal?: string): Promise<Exec
         // Convert duration from clock ticks to milliseconds. 18.2 ticks per second.
         const durationInMs = durationInTicks * (1000 / 18.2);
 
+        // Yield to event loop to allow UI render before blocking
+        await new Promise(resolve => setTimeout(resolve, 0));
         await playTone(freq, durationInMs, 'MN');
       
       // --- PLAY "C D E" ---
@@ -740,6 +822,12 @@ export const executeCode = async (code: string, inputVal?: string): Promise<Exec
 
             const command = token[0];
             let valueStr = token.substring(1);
+
+            // Yield to event loop before each sound to keep UI responsive
+            const shouldPlaySound = ['P', 'N', 'A', 'B', 'C', 'D', 'E', 'F', 'G'].includes(command);
+            if (shouldPlaySound) {
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
 
             if (command === 'T') {
                 const tempo = parseInt(valueStr);

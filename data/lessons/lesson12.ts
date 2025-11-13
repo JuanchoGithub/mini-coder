@@ -1,3 +1,4 @@
+
 import { Lesson } from '../../types';
 
 export const lesson12: Lesson = {
@@ -70,7 +71,11 @@ Vamos a crear una lista de compras. Declara un arreglo, guarda algunos productos
 ' 4. Imprime el valor de la tercera casilla.
 `,
         expectedOutput: "Pan",
-        solutionCues: ['DIM', 'compras$(1)', 'compras$(3)', 'PRINT']
+        solutionCues: ['DIM', 'compras$(1)', 'compras$(3)', 'PRINT'],
+        solution: `DIM compras$(3)
+compras$(1) = "Leche"
+compras$(3) = "Pan"
+PRINT compras$(3)`
       }
     },
     {
@@ -119,7 +124,17 @@ PRINT "Los primeros 4 planetas son:"
 ' e imprima cada elemento de planetas$(i).
 `,
         expectedOutput: "Los primeros 4 planetas son:\nMercurio\nVenus\nTierra\nMarte",
-        solutionCues: ['FOR', 'PRINT', 'planetas$(i)']
+        solutionCues: ['FOR', 'PRINT', 'planetas$(i)'],
+        solution: `DIM planetas$(4)
+planetas$(1) = "Mercurio"
+planetas$(2) = "Venus"
+planetas$(3) = "Tierra"
+planetas$(4) = "Marte"
+
+PRINT "Los primeros 4 planetas son:"
+FOR i = 1 TO 4
+    PRINT planetas$(i)
+NEXT i`
       }
     },
     {

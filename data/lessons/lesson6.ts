@@ -1,3 +1,4 @@
+
 import { Lesson } from '../../types';
 
 export const lesson6: Lesson = {
@@ -44,13 +45,18 @@ Prueba un IF básico. Pide una edad con INPUT y chequea si es mayor o igual a 18
       `,
       exercise: {
           prompt: "Completa el código para que, después de pedir una edad, imprima 'Adulto' si la edad es 18 o más.",
-          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `INPUT "Edad: ", edad
 ' Escribe aquí tu estructura IF...THEN...END IF
 ' Debe imprimir "Adulto" si la edad es 18 o más.
 
 PRINT "Fin del chequeo"`,
-          expectedOutput: "Adulto\nFin del chequeo"  // For edad 20
+          expectedOutput: "Adulto\nFin del chequeo",
+          solution: `INPUT "Edad: ", edad
+IF edad >= 18 THEN
+  PRINT "Adulto"
+END IF
+
+PRINT "Fin del chequeo"`
       }
     },
     {
@@ -92,12 +98,17 @@ Agrega ELSE a un chequeo de par/impar. Usa MOD 2 = 0 para par.
       `,
       exercise: {
           prompt: "Completa el código para que, después de pedir un número, imprima 'Par' si es par, o 'Impar' si no lo es.",
-          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `INPUT "Número: ", numero
 ' Escribe aquí tu estructura IF...ELSE...END IF
 ' Debe imprimir "Par" o "Impar" según el número.
 ' Pista: Usa el operador MOD'`,
-          expectedOutput: "Par"  // For 4
+          expectedOutput: "Par",
+          solution: `INPUT "Número: ", numero
+IF numero MOD 2 = 0 THEN
+  PRINT "Par"
+ELSE
+  PRINT "Impar"
+END IF`
       }
     },
     {
@@ -148,7 +159,6 @@ Crea un calificador con múltiples ELSEIF para rangos de notas. Asegúrate de cu
       `,
       exercise: {
           prompt: "Completa la lógica para que el programa maneje todas las notas. Añade una condición para 'Suspenso' (nota >= 4) y una final para 'Reprobado grave' para cualquier nota inferior.",
-          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `INPUT "Nota: ", nota
 IF nota >= 9 THEN
     PRINT "Excelente"
@@ -160,7 +170,19 @@ END IF
 ' ↓↓↓ Completa la lógica aquí abajo ↓↓↓
 ' Agrega un ELSEIF para las notas entre 4 y 5 (Suspenso)
 ' Agrega un ELSE final para todo lo demás (Reprobado grave)'`,
-          expectedOutput: "Suspenso"
+          expectedOutput: "Suspenso",
+          solution: `INPUT "Nota: ", nota
+IF nota >= 9 THEN
+    PRINT "Excelente"
+ELSEIF nota >= 7 THEN
+    PRINT "Bueno"
+ELSEIF nota >= 5 THEN
+    PRINT "Aprobado"
+ELSEIF nota >= 4 THEN
+    PRINT "Suspenso"
+ELSE
+    PRINT "Reprobado grave"
+END IF`
       }
     },
     {
@@ -238,7 +260,6 @@ Quita estos PRINTs una vez que funcione.
       content: "Vamos a crear un sistema de seguridad para un castillo. Debe pedir una clave. Si la clave es correcta, pregunta si eres amigo o enemigo para decidir si abrir la puerta o llamar a los guardias. Usa anidación y agrega un ELSEIF si la clave está cerca pero no exacta (ej: longitud similar).",
       exercise: {
         prompt: "Completa el código. Necesitarás un IF principal para la clave, un ELSEIF para claves similares, y un IF anidado para el tipo de visitante.",
-        // FIX: Added closing backtick to initialCode template literal.
         initialCode: `clave_secreta$ = "abracadabra"
 
 PRINT "Te acercas a la puerta del castillo."
@@ -257,7 +278,25 @@ ELSE
     PRINT "Clave incorrecta. El guardia te echa."
 END IF
 `,
-        solutionCues: ['IF', 'THEN', 'INPUT', 'ELSE', 'END IF', 'ELSEIF']
+        solutionCues: ['IF', 'THEN', 'INPUT', 'ELSE', 'END IF', 'ELSEIF'],
+        solution: `clave_secreta$ = "abracadabra"
+
+PRINT "Te acercas a la puerta del castillo."
+INPUT "El guardia te pide la clave: ", intento$
+
+IF intento$ = clave_secreta$ THEN
+    PRINT "La clave es correcta."
+    INPUT "¿Amigo o enemigo? ", tipo$
+    IF tipo$ = "amigo" THEN
+        PRINT "¡Adelante!"
+    ELSE
+        PRINT "¡Guardias! ¡Un intruso!"
+    END IF
+ELSEIF LEN(intento$) = LEN(clave_secreta$) THEN
+    PRINT "Clave casi... pero no."
+ELSE
+    PRINT "Clave incorrecta. El guardia te echa."
+END IF`
       }
     },
     {

@@ -1,3 +1,4 @@
+
 import { Lesson } from '../../types';
 
 export const lesson4: Lesson = {
@@ -79,12 +80,15 @@ Intenta predecir el output antes de ejecutar.
       `,
       exercise: {
           prompt: "Crea una variable 'edad' con 25, y 'nombre$' con 'Juan'. Luego, imprime ambas variables, una en cada línea.",
-          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `' Crea una variable llamada edad con el número 25
 ' Crea una variable llamada nombre$ con el texto "Juan"
 
 ' Imprime ambas variables, una en cada línea'`,
-          expectedOutput: "25\nJuan"
+          expectedOutput: "25\nJuan",
+          solution: `edad = 25
+nombre$ = "Juan"
+PRINT edad
+PRINT nombre$`
       }
     },
     {
@@ -125,9 +129,9 @@ Por ejemplo, puedes sumar dos números (\\\`5 + 5\\\`) y puedes "sumar" (concate
       `,
       exercise: {
           prompt: "Intenta multiplicar el texto 'hola' por 5. La computadora no sabrá qué hacer y te mostrará un error. El objetivo es ver este error.",
-          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `' Escribe aquí el código para intentar multiplicar "hola" por 5'`,
-          expectedOutput: "$$ERROR$$"
+          expectedOutput: "$$ERROR$$",
+          solution: `PRINT "hola" * 5`
       }
     },
     {
@@ -205,7 +209,6 @@ Preguntará el nombre (texto, necesita \\\`$\\\`) y luego la edad (número, NO n
       `,
       exercise: {
         prompt: "Completa el código para que pregunte la edad y dé una respuesta final personalizada, como '¡Vaya, tienes X años, nombre!'",
-        // FIX: Added closing backtick to initialCode template literal.
         initialCode: `INPUT "¿Cómo te llamas? ", nombre$
 PRINT "Hola, " + nombre$
 
@@ -214,7 +217,12 @@ PRINT "Hola, " + nombre$
 '    Guarda el resultado en una variable llamada 'edad'.
 
 ' 2. Usa PRINT para decir algo como "¡Vaya, tienes " + edad + " años, " + nombre$ + "!" (usa + para concatenar, pero convierte edad a string si es necesario).`,
-        solutionCues: ['INPUT', 'edad', 'PRINT']
+        solutionCues: ['INPUT', 'edad', 'PRINT'],
+        solution: `INPUT "¿Cómo te llamas? ", nombre$
+PRINT "Hola, " + nombre$
+
+INPUT "Dime tu edad: ", edad
+PRINT "¡Vaya, tienes " + edad + " años, " + nombre$ + "!"`
       }
     },
     {

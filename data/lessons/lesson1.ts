@@ -1,3 +1,4 @@
+
 import { Lesson } from '../../types';
 
 export const lesson1: Lesson = {
@@ -66,6 +67,7 @@ Nota: Todo lo que va entre comillas (" ") es texto literal que se muestra tal cu
           prompt: "Cambia el texto dentro de las comillas para que diga 'Hola, MiniCoder' y pulsa Ejecutar.",
           initialCode: 'PRINT "¡Hola Mundo!"',
           expectedOutput: "Hola, MiniCoder",
+          solution: 'PRINT "Hola, MiniCoder"',
           errorHints: [
             {
               codeIncludes: '¡Hola, MiniCoder!',
@@ -94,9 +96,9 @@ Intenta imprimir el resultado de una resta. Esto te muestra que PRINT no solo es
       `,
       exercise: {
           prompt: "Ahora, haz que el programa imprima el resultado de la resta `100 - 42`.",
-          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `' Escribe aquí un comando PRINT para calcular 100 - 42'`,
-          expectedOutput: "58"
+          expectedOutput: "58",
+          solution: 'PRINT 100 - 42'
       }
     },
     {
@@ -130,7 +132,8 @@ Intenta provocar un **Error de Sintaxis** escribiendo mal el comando (ej: \`PRIN
       exercise: {
           prompt: "Genera un Syntax Error. Rompe el comando PRINT a propósito, luego arréglalo.",
           initialCode: 'PRINT ("Esto va a fallar"',
-          expectedOutput: "$$ERROR$$"  // Para el error, y luego el output correcto
+          expectedOutput: "$$ERROR$$",
+          solution: 'PRINT "Esto ahora funciona"'
       }
     },
     {
@@ -163,12 +166,15 @@ Esto enseña "flujo de control": la computadora es como un lector que sigue la h
       `,
       exercise: {
           prompt: "Añade una cuarta línea de código usando `PRINT` al final para completar la historia con la frase 'Y creó mundos nuevos.'.",
-          // FIX: Added closing backtick to initialCode template literal.
           initialCode: `PRINT "Había una vez..."
 PRINT "un programador novato..."
 PRINT "¡que se convirtió en experto!"
 ' Agrega tu línea de código aquí debajo'`,
-          expectedOutput: "Había una vez...\nun programador novato...\n¡que se convirtió en experto!\nY creó mundos nuevos."
+          expectedOutput: "Había una vez...\nun programador novato...\n¡que se convirtió en experto!\nY creó mundos nuevos.",
+          solution: `PRINT "Había una vez..."
+PRINT "un programador novato..."
+PRINT "¡que se convirtió en experto!"
+PRINT "Y creó mundos nuevos."`
       }
     },
     {
