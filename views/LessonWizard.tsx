@@ -47,8 +47,10 @@ const LessonWizard = () => {
 
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [codeProgress, setCodeProgress] = useState<Record<number, string>>({});
+  const [completedSteps, setCompletedSteps] = useState<Record<number, boolean>>({});
   const [exerciseCompleted, setExerciseCompleted] = useState(false);
   const [exerciseHint, setExerciseHint] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [isSolutionVisible, setIsSolutionVisible] = useState(false);
   const [solutionCode, setSolutionCode] = useState<string | null>(null);
@@ -66,6 +68,9 @@ const LessonWizard = () => {
             if (savedProgress.codeProgress) {
                 setCodeProgress(savedProgress.codeProgress);
             }
+            if (savedProgress.completedSteps) {
+                setCompletedSteps(savedProgress.completedSteps);
+            }
         } catch (e) {
             console.error("Failed to parse lesson progress cookie", e);
             eraseCookie(`lessonProgress_${lessonId}`);
@@ -74,22 +79,24 @@ const LessonWizard = () => {
         // No saved progress, ensure state is fresh for this lesson
         setCurrentStepIndex(0);
         setCodeProgress({});
+        setCompletedSteps({});
     }
   }, [lessonId]);
 
   // Save progress to cookie whenever it changes
   useEffect(() => {
     // Avoid saving initial blank state on first render
-    if (currentStepIndex === 0 && Object.keys(codeProgress).length === 0) {
+    if (currentStepIndex === 0 && Object.keys(codeProgress).length === 0 && Object.keys(completedSteps).length === 0) {
       const savedProgressCookie = getCookie(`lessonProgress_${lessonId}`);
       if (!savedProgressCookie) return;
     }
     const progress = {
         currentStepIndex,
         codeProgress,
+        completedSteps,
     };
     setCookie(`lessonProgress_${lessonId}`, JSON.stringify(progress), 365);
-  }, [currentStepIndex, codeProgress, lessonId]);
+  }, [currentStepIndex, codeProgress, completedSteps, lessonId]);
 
 
   // Admin mode activation via key sequence
@@ -117,21 +124,34 @@ const LessonWizard = () => {
         document.removeEventListener('keydown', handleKeyDown);
     };
   }, []); // Run only on mount
+  
+  // Set local exerciseCompleted state based on persistent completedSteps
+  useEffect(() => {
+      setExerciseCompleted(!!completedSteps[currentStepIndex]);
+  }, [currentStepIndex, completedSteps]);
+
 
   if (!lesson) return <div className="p-8 text-center text-2xl font-bold text-slate-400">Lección no encontrada 😔</div>;
 
   const currentStep = lesson.steps[currentStepIndex];
   const isLastStep = currentStepIndex === lesson.steps.length - 1;
   const hasBigComponent = ['code', 'logic-simulation', 'logic-simulation-2d'].includes(currentStep.type);
+  
+  const markStepAsComplete = (index: number) => {
+    setCompletedSteps(prev => ({ ...prev, [index]: true }));
+    setExerciseCompleted(true);
+  };
 
 
   const handleNext = () => {
     if (isLastStep) {
+      setCookie(`lessonCompleted_${lessonId}`, 'true', 365);
       navigate('/');
     } else {
       setCurrentStepIndex(prev => prev + 1);
       setExerciseCompleted(false);
       setExerciseHint(null);
+      setSuccessMessage(null);
     }
   };
 
@@ -140,12 +160,14 @@ const LessonWizard = () => {
       setCurrentStepIndex(prev => prev - 1);
       setExerciseCompleted(false); 
       setExerciseHint(null);
+      setSuccessMessage(null);
     }
   };
 
   const handleResetProgress = () => {
     if (window.confirm("¿Estás seguro de que quieres borrar todo tu progreso en esta lección? Esta acción no se puede deshacer.")) {
         eraseCookie(`lessonProgress_${lessonId}`);
+        eraseCookie(`lessonCompleted_${lessonId}`);
         window.location.reload();
     }
   };
@@ -157,11 +179,13 @@ const LessonWizard = () => {
     if (currentStep.exercise.expectedOutput === "DONE") return;
 
     setExerciseHint(null); // Reset hint on every run
+    setSuccessMessage(null); // Reset success message on every run
 
     // Case 1: The exercise expects a specific error
     if (currentStep.exercise.expectedOutput === '$$ERROR$$') {
         if (result.error) {
-            setExerciseCompleted(true);
+            markStepAsComplete(currentStepIndex);
+            setSuccessMessage("¡Correcto! Has provocado el error esperado. ¡Buen trabajo rompiendo cosas!");
         } else {
             setExerciseHint("El objetivo era causar un error de sintaxis, pero tu código funcionó. ¡Intenta romperlo a propósito!");
         }
@@ -191,7 +215,8 @@ const LessonWizard = () => {
     }
 
     if (isSuccess) {
-        setExerciseCompleted(true);
+        markStepAsComplete(currentStepIndex);
+        setSuccessMessage("¡Correcto! Has resuelto el ejercicio. Ya puedes continuar.");
         return;
     }
 
@@ -289,18 +314,25 @@ const LessonWizard = () => {
       <main className="flex-1 max-w-6xl w-full mx-auto px-2 py-6 md:p-8 flex flex-col gap-6 md:gap-8">
         <div className={`bg-white rounded-3xl shadow-sm border border-slate-100 p-4 md:p-10 animate-fadeIn flex flex-col ${!hasBigComponent ? 'flex-1' : ''}`}>
             <div className="mb-6">
-                <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 ${currentStep.type === 'theory' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>
-                    {currentStep.type === 'theory' ? 'Teoría' : currentStep.type.includes('simulation') ? 'Simulador' : 'Práctica'}
-                </span>
+                 <div className="flex items-center mb-4">
+                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${currentStep.type === 'theory' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>
+                        {currentStep.type === 'theory' ? 'Teoría' : currentStep.type.includes('simulation') ? 'Simulador' : 'Práctica'}
+                    </span>
+                    {isExerciseStep && completedSteps[currentStepIndex] && (
+                        <span className="ml-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 animate-fadeIn shadow-sm border border-green-200">
+                            <Check size={14}/> RESUELTO
+                        </span>
+                    )}
+                </div>
                 <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-6">{currentStep.title}</h2>
                 
-                <div className="prose prose-slate prose-lg max-w-none prose-headings:text-slate-800 prose-p:text-slate-600 prose-strong:text-primary prose-code:text-pink-600 prose-code:bg-pink-50 prose-code:px-1 prose-code:rounded mb-8">
+                <div className="prose prose-slate prose-lg max-w-none prose-headings:text-slate-800 prose-p:text-slate-600 prose-strong:text-primary prose-code:text-pink-600 prose-code:bg-pink-50 prose-code:px-1 prose-code:rounded">
                     <ReactMarkdown components={{ pre: CustomPre }}>{currentStep.content}</ReactMarkdown>
                 </div>
             </div>
             
             {currentStep.type === 'code' && currentStep.exercise && (
-                 <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg text-amber-800 font-medium flex justify-between items-center">
+                 <div className="mt-8 bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg text-amber-800 font-medium flex justify-between items-center">
                     <span>💡 Tu misión: {currentStep.exercise.prompt}</span>
                     {currentStep.exercise.solution && (
                         <button 
@@ -321,7 +353,7 @@ const LessonWizard = () => {
                  <div className="mt-8 bg-indigo-50 p-6 rounded-2xl border border-indigo-100 flex flex-col items-center text-center">
                     <p className="text-indigo-900 text-lg font-medium mb-4">{currentStep.exercise.prompt}</p>
                     <button 
-                        onClick={() => setExerciseCompleted(true)} 
+                        onClick={() => markStepAsComplete(currentStepIndex)} 
                         className={`px-6 py-3 rounded-xl font-bold text-white shadow-md transition-all transform active:scale-95 ${exerciseCompleted ? 'bg-green-500 hover:bg-green-600' : 'bg-primary hover:bg-indigo-700'}`}
                     >
                         {exerciseCompleted ? <span className="flex items-center gap-2"><CheckCircle/> ¡Listo!</span> : 'Ya lo pensé'}
@@ -339,7 +371,7 @@ const LessonWizard = () => {
                     return scenario ? (
                         <LogicSimulator 
                             scenario={scenario} 
-                            onComplete={() => setExerciseCompleted(true)}
+                            onComplete={() => markStepAsComplete(currentStepIndex)}
                         />
                     ) : (
                         <div className="text-red-500">Escenario de texto no encontrado</div>
@@ -355,7 +387,7 @@ const LessonWizard = () => {
                     return scenario ? (
                         <RobotSimulator2D 
                             scenario={scenario} 
-                            onComplete={() => setExerciseCompleted(true)}
+                            onComplete={() => markStepAsComplete(currentStepIndex)}
                         />
                     ) : (
                         <div className="text-red-500">Escenario 2D no encontrado</div>
@@ -366,7 +398,13 @@ const LessonWizard = () => {
 
         {currentStep.type === 'code' && currentStep.exercise && (
             <div className="flex-1 flex flex-col min-h-0">
-                {exerciseHint && (
+                {successMessage && (
+                  <div className="mb-4 bg-green-50 border-l-4 border-green-500 p-4 text-green-800 font-bold animate-fadeIn flex items-center gap-3">
+                    <CheckCircle size={20} />
+                    <span>{successMessage}</span>
+                  </div>
+                )}
+                {exerciseHint && !successMessage && (
                   <div className="mb-4 bg-blue-50 border-l-4 border-blue-400 p-4 text-blue-800 font-medium animate-fadeIn whitespace-pre-wrap">
                     🤔 Pista: {exerciseHint}
                   </div>
